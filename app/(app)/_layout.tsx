@@ -9,11 +9,11 @@ const TABS: {
   icon: keyof typeof Ionicons.glyphMap;
   iconActive: keyof typeof Ionicons.glyphMap;
 }[] = [
-  { name: "index",        label: "Home",    icon: "home-outline",                 iconActive: "home" },
-  { name: "transactions", label: "Txns",    icon: "swap-vertical-outline",        iconActive: "swap-vertical" },
-  { name: "budgets",      label: "Budgets", icon: "wallet-outline",               iconActive: "wallet" },
-  { name: "metrics",      label: "Metrics", icon: "bar-chart-outline",            iconActive: "bar-chart" },
-  { name: "more",         label: "More",    icon: "ellipsis-horizontal-outline",  iconActive: "ellipsis-horizontal" },
+  { name: "index",              label: "Home",    icon: "home-outline",                iconActive: "home" },
+  { name: "transactions/index", label: "Txns",    icon: "swap-vertical-outline",       iconActive: "swap-vertical" },
+  { name: "budgets/index",      label: "Budgets", icon: "wallet-outline",              iconActive: "wallet" },
+  { name: "metrics/index",      label: "Metrics", icon: "bar-chart-outline",           iconActive: "bar-chart" },
+  { name: "more",               label: "More",    icon: "ellipsis-horizontal-outline", iconActive: "ellipsis-horizontal" },
 ];
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -94,9 +94,9 @@ export default function AppLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
-      <Tabs.Screen name="transactions" options={{ title: "Transactions" }} />
-      <Tabs.Screen name="budgets" options={{ title: "Budgets" }} />
-      <Tabs.Screen name="metrics" options={{ title: "Metrics" }} />
+      <Tabs.Screen name="transactions/index" options={{ title: "Transactions" }} />
+      <Tabs.Screen name="budgets/index" options={{ title: "Budgets" }} />
+      <Tabs.Screen name="metrics/index" options={{ title: "Metrics" }} />
       <Tabs.Screen name="more" options={{ title: "More" }} />
     </Tabs>
   );
