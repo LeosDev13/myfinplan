@@ -1,0 +1,31 @@
+# PowerSync Sync Rules
+# Upload this in the PowerSync dashboard under your instance → Sync Rules
+
+bucket_definitions:
+  workspace_data:
+    # One bucket per workspace the user belongs to
+    parameters:
+      - SELECT workspace_id FROM workspace_members WHERE user_id = token_parameters.user_id
+
+    data:
+      # Direct workspace-scoped tables
+      - SELECT * FROM accounts WHERE workspace_id = bucket.workspace_id
+      - SELECT * FROM transactions WHERE workspace_id = bucket.workspace_id
+      - SELECT * FROM budgets WHERE workspace_id = bucket.workspace_id
+      - SELECT * FROM categories WHERE workspace_id = bucket.workspace_id
+
+      # Nested: budget_items (via budgets)
+      - SELECT bi.* FROM budget_items bi
+        JOIN budgets b ON b.id = bi.budget_id
+        WHERE b.workspace_id = bucket.workspace_id
+
+      # Nested: budget_item_transactions (via budget_items → budgets)
+      - SELECT bit.* FROM budget_item_transactions bit
+        JOIN budget_items bi ON bi.id = bit.budget_item_id
+        JOIN budgets b ON b.id = bi.budget_id
+        WHERE b.workspace_id = bucket.workspace_id
+
+      # Nested: subcategories (via categories)
+      - SELECT s.* FROM subcategories s
+        JOIN categories c ON c.id = s.category_id
+        WHERE c.workspace_id = bucket.workspace_id
