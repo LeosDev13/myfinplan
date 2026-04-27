@@ -1,4 +1,5 @@
 import { TextInput, TextInputProps, View, Text } from "react-native";
+import { useState } from "react";
 import { cn } from "~/lib/utils";
 
 interface InputProps extends TextInputProps {
@@ -7,19 +8,31 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, className, ...props }: InputProps) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View className="gap-1.5">
       {label && (
-        <Text className="text-sm font-medium text-foreground">{label}</Text>
+        <Text className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          {label}
+        </Text>
       )}
       <TextInput
         className={cn(
-          "h-12 rounded-lg border border-input bg-background px-4 text-base text-foreground",
-          "placeholder:text-muted-foreground",
+          "h-[52px] rounded-xl border bg-input px-4 text-base font-medium text-foreground",
+          focused ? "border-primary" : "border-border",
           error && "border-destructive",
           className
         )}
-        placeholderTextColor="hsl(240 3.8% 46.1%)"
+        placeholderTextColor="hsl(30 6% 63%)"
+        onFocus={(e) => {
+          setFocused(true);
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused(false);
+          props.onBlur?.(e);
+        }}
         {...props}
       />
       {error && (
