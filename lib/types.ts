@@ -60,6 +60,16 @@ export interface BudgetItemTransaction {
   created_at: string;
 }
 
+export interface BudgetWithTotals extends Budget {
+  spent_cents: number;        // SUM of all linked transaction amount_cents across all items
+  total_planned_cents: number; // SUM of item planned_cents
+}
+
+export interface BudgetItemWithSpend extends BudgetItem {
+  spent_cents: number;  // SUM of linked transaction amount_cents for this item
+  currency: string;     // inherited from parent budget (via JOIN)
+}
+
 export interface Category {
   id: string;
   workspace_id: string;
