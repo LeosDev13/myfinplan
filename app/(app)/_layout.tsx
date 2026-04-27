@@ -67,13 +67,13 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             <Ionicons
               name={isFocused ? tab.iconActive : tab.icon}
               size={22}
-              color={isFocused ? "#10b981" : "#525252"}
+              color={isFocused ? "#10b981" : "#888888"}
             />
             <Text
               style={{
                 fontSize: 10,
                 fontWeight: isFocused ? "700" : "500",
-                color: isFocused ? "#10b981" : "#525252",
+                color: isFocused ? "#10b981" : "#888888",
                 marginTop: 2,
                 letterSpacing: 0.2,
               }}
