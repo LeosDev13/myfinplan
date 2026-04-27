@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity, SectionList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useTransactions } from "~/lib/database/transactions";
 import { AddTransactionSheet } from "./AddTransactionSheet";
 import type { Transaction, TransactionType } from "~/lib/types";
@@ -164,18 +165,8 @@ export default function ActivityScreen() {
         <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
           Activity
         </Text>
-        <TouchableOpacity
-          onPress={() => setSheetVisible(true)}
-          style={{
-            width: 28,
-            height: 28,
-            backgroundColor: "#10b981",
-            borderRadius: 8,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700", lineHeight: 22 }}>+</Text>
+        <TouchableOpacity onPress={() => setSheetVisible(true)} hitSlop={8}>
+          <Ionicons name="add" size={26} color="#10b981" />
         </TouchableOpacity>
       </View>
 
