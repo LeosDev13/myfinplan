@@ -23,12 +23,13 @@ export const TYPE_PREFIX: Record<TransactionType, string> = {
 };
 
 export function formatAmount(amountCents: number, currency: string): string {
-  const symbol = currency === "EUR" ? "€" : currency === "USD" ? "$" : currency + " ";
-  const value = (amountCents / 100).toLocaleString("en-US", {
+  const value = amountCents / 100;
+  return new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  });
-  return `${symbol}${value}`;
+  }).format(value);
 }
 
 // ─── row ────────────────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ export function TransactionRow({
   total: number;
   selected?: boolean;
 }) {
-  const type = item.transaction_type as TransactionType;
+  const type = item.transaction_type;
   const color = TYPE_COLOR[type] ?? "#ffffff";
   const bg = TYPE_BG[type] ?? "transparent";
   const prefix = TYPE_PREFIX[type] ?? "";
