@@ -32,7 +32,7 @@ export function Sheet({ visible, onClose, title, children }: SheetProps) {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="absolute bottom-0 left-0 right-0"
       >
-        <View className="bg-card rounded-t-2xl px-6 pt-4 pb-10 max-h-[85%]">
+        <View className="bg-card rounded-t-2xl px-6 pt-4 pb-10 max-h-[85%] overflow-hidden">
           {/* Handle */}
           <View className="w-10 h-1 bg-muted rounded-full self-center mb-4" />
 

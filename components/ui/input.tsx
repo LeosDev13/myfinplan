@@ -24,7 +24,7 @@ export function Input({ label, error, className, ...props }: InputProps) {
           error && "border-destructive",
           className
         )}
-        placeholderTextColor="hsl(30 6% 63%)"
+        placeholderTextColor="#525252"
         onFocus={(e) => {
           setFocused(true);
           props.onFocus?.(e);
