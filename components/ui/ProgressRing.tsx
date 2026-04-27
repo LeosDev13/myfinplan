@@ -37,8 +37,7 @@ export function ProgressRing({
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          rotation="-90"
-          origin={`${center}, ${center}`}
+          transform={`rotate(-90, ${center}, ${center})`}
         />
       </Svg>
       <View
