@@ -39,6 +39,7 @@ export function useBudgetWithTotals(budgetId: string) {
   return {
     data: result.data[0] ?? null,
     isLoading: result.isLoading,
+    error: result.error,
   };
 }
 
@@ -76,6 +77,7 @@ export function useBudgetItemWithSpend(itemId: string) {
   return {
     data: result.data[0] ?? null,
     isLoading: result.isLoading,
+    error: result.error,
   };
 }
 
@@ -90,7 +92,7 @@ export function useLinkedTransactions(itemId: string) {
   );
 }
 
-export function useUnlinkedTransactions(itemId: string, workspaceId: string) {
+export function useUnlinkedTransactions(workspaceId: string, itemId: string) {
   return useQuery<Transaction>(
     `SELECT * FROM transactions
      WHERE workspace_id = ?
