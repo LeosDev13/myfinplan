@@ -269,31 +269,33 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
           )}
         />
 
-        {/* Reimbursed — expense only */}
-        {type === "expense" && (
-          <Controller
-            control={control}
-            name="reimbursed"
-            render={({ field: { onChange, value } }) => (
-              <View className="flex-row items-center justify-between py-1">
-                <View>
-                  <Text className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-                    Reimbursed
-                  </Text>
-                  <Text className="text-xs text-muted-foreground mt-0.5">
-                    Mark as to be paid back
-                  </Text>
-                </View>
-                <Switch
-                  value={value ?? false}
-                  onValueChange={onChange}
-                  trackColor={{ false: "#1f1f1f", true: "#10b981" }}
-                  thumbColor="#ffffff"
-                />
+        {/* Reimbursed — always rendered to prevent height jump; hidden when not expense */}
+        <Controller
+          control={control}
+          name="reimbursed"
+          render={({ field: { onChange, value } }) => (
+            <View
+              className="flex-row items-center justify-between py-1"
+              style={{ opacity: type === "expense" ? 1 : 0 }}
+              pointerEvents={type === "expense" ? "auto" : "none"}
+            >
+              <View>
+                <Text className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Reimbursed
+                </Text>
+                <Text className="text-xs text-muted-foreground mt-0.5">
+                  Mark as to be paid back
+                </Text>
               </View>
-            )}
-          />
-        )}
+              <Switch
+                value={value ?? false}
+                onValueChange={onChange}
+                trackColor={{ false: "#1f1f1f", true: "#10b981" }}
+                thumbColor="#ffffff"
+              />
+            </View>
+          )}
+        />
 
         {/* Save */}
         <Button
