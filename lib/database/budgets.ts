@@ -5,6 +5,27 @@ import {
   Transaction,
 } from "../types";
 
+/** Returns a hex color based on the spend ratio: green → amber → red */
+export function spendColor(spent: number, planned: number): string {
+  if (planned <= 0) return "#10b981";
+  const ratio = spent / planned;
+  if (ratio >= 1) return "#ef4444";
+  if (ratio >= 0.8) return "#f59e0b";
+  return "#10b981";
+}
+
+/** Returns a 0–1 progress value clamped for display */
+export function spendProgress(spent: number, planned: number): number {
+  if (planned <= 0) return 0;
+  return Math.min(spent / planned, 1);
+}
+
+/** Returns a human-readable percentage string, e.g. "42%" */
+export function spendPct(spent: number, planned: number): string {
+  if (planned <= 0) return "0%";
+  return `${Math.round((spent / planned) * 100)}%`;
+}
+
 export function useBudgets(workspaceId: string) {
   return useQuery<BudgetWithTotals>(
     `SELECT
