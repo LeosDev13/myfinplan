@@ -97,7 +97,7 @@ export default function BudgetsScreen() {
   const [error, setError]         = useState("");
 
   const resetForm = () => {
-    setName(""); setCurrency("EUR"); setEventDate(null); setNotes(""); setError("");
+    setName(""); setCurrency("EUR"); setEventDate(null); setShowPicker(false); setNotes(""); setError("");
   };
 
   const handleSave = async () => {
@@ -112,8 +112,8 @@ export default function BudgetsScreen() {
       });
       resetForm();
       setSheetVisible(false);
-    } catch (e: any) {
-      setError(e.message ?? "Failed to save");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to save");
     } finally {
       setSaving(false);
     }
