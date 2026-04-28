@@ -14,7 +14,7 @@
     "@journeyapps/react-native-quick-sqlite": "^2.5.2",
     "@powersync/common": "^1.51.0",
     "@powersync/react-native": "^1.33.1",
-    "@react-native-community/datetimepicker": "^9.1.0",
+    "@react-native-community/datetimepicker": "8.4.4",
     "@supabase/supabase-js": "^2.103.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
