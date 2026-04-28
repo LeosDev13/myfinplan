@@ -29,7 +29,7 @@ function formatMoney(cents: number, currency: string): string {
 
 export default function BudgetItemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const itemId  = Array.isArray(id) ? id[0] : id;
+  const itemId  = Array.isArray(id) ? (id[0] ?? "") : (id ?? "");
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const { workspaceId } = useWorkspace();
@@ -201,9 +201,7 @@ export default function BudgetItemScreen() {
             loading={linking}
             disabled={selected.size === 0}
           >
-            {selected.size === 0
-              ? "Select transactions"
-              : `Link ${selected.size} transaction${selected.size > 1 ? "s" : ""}`}
+            {`Link ${selected.size} transaction${selected.size !== 1 ? "s" : ""}`}
           </Button>
         </View>
       </Sheet>
