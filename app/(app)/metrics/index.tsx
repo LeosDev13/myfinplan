@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, type DimensionValue } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import {
@@ -92,7 +92,7 @@ export default function MetricsScreen() {
   // Merge trend query results with full month range (fill zeros for empty months)
   const monthLabels = useMemo(() => generateMonthRange(trendMonths), [trendMonths]);
   const trendByMonth = useMemo(() => {
-    const map = new Map(trendData.map((r) => [r.month, r]));
+    const map = new Map((trendData ?? []).map((r) => [r.month, r]));
     return monthLabels.map(
       (month) => map.get(month) ?? { month, income_cents: 0, expense_cents: 0 }
     );
@@ -274,7 +274,7 @@ export default function MetricsScreen() {
                           height: 4,
                           width: `${Math.round(
                             (cat.total_cents / maxCategoryTotal) * 100
-                          )}%` as any,
+                          )}%` as DimensionValue,
                         }}
                       />
                     </View>
