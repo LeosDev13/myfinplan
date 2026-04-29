@@ -85,3 +85,21 @@ export interface Subcategory {
   is_built_in: number; // 0 | 1
   created_at: string;
 }
+
+export interface MetricsSummary {
+  income_cents: number;
+  expense_cents: number;
+  saved_cents: number;
+}
+
+export interface CategoryBreakdownRow {
+  category: string;
+  total_cents: number;
+  subcategories: { name: string; total_cents: number }[];
+}
+
+export interface MonthlyTrendRow {
+  month: string;         // "YYYY-MM"
+  income_cents: number;
+  expense_cents: number;
+}
