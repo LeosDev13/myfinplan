@@ -6,61 +6,13 @@ import {
   Alert,
 } from "react-native";
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import {
   useCategoriesWithSubs,
   useCategoryMutations,
   CategoryWithSubs,
 } from "~/lib/database/categories";
-import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import { Subcategory } from "~/lib/types";
-import { Sheet } from "~/components/ui/sheet";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
-
-// ─── form ────────────────────────────────────────────────────
-const nameSchema = z.object({ name: z.string().min(1, "Name is required") });
-type NameForm = z.infer<typeof nameSchema>;
-
-function NameInputForm({
-  placeholder,
-  onSubmit,
-  submitLabel,
-}: {
-  placeholder: string;
-  onSubmit: (data: NameForm) => Promise<void>;
-  submitLabel: string;
-}) {
-  const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<NameForm>({
-    resolver: zodResolver(nameSchema),
-  });
-
-  return (
-    <View className="gap-4 pb-4">
-      <Controller
-        control={control}
-        name="name"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            label="Name"
-            placeholder={placeholder}
-            autoCapitalize="words"
-            autoFocus
-            onChangeText={onChange}
-            onBlur={onBlur}
-            value={value}
-            error={errors.name?.message}
-          />
-        )}
-      />
-      <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-        {submitLabel}
-      </Button>
-    </View>
-  );
-}
 
 // ─── subcategory row ─────────────────────────────────────────
 function SubcategoryRow({
@@ -152,14 +104,11 @@ function CategoryRow({
 
 // ─── screen ──────────────────────────────────────────────────
 export default function CategoriesScreen() {
+  const router = useRouter();
   const { data: categories, isLoading } = useCategoriesWithSubs();
-  const { workspaceId } = useWorkspace();
-  const { createCategory, deleteCategory, createSubcategory, deleteSubcategory } =
-    useCategoryMutations();
+  const { deleteCategory, deleteSubcategory } = useCategoryMutations();
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [addCatOpen, setAddCatOpen] = useState(false);
-  const [addSubTarget, setAddSubTarget] = useState<CategoryWithSubs | null>(null);
 
   const toggleExpand = (id: string) => {
     setExpanded((prev) => {
@@ -167,12 +116,6 @@ export default function CategoriesScreen() {
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-  };
-
-  const handleCreateCategory = async (data: NameForm) => {
-    if (!workspaceId) return;
-    await createCategory(workspaceId, data.name);
-    setAddCatOpen(false);
   };
 
   const handleDeleteCategory = async (category: CategoryWithSubs) => {
@@ -198,12 +141,6 @@ export default function CategoriesScreen() {
     );
   };
 
-  const handleCreateSubcategory = async (data: NameForm) => {
-    if (!addSubTarget) return;
-    await createSubcategory(addSubTarget.id, data.name);
-    setAddSubTarget(null);
-  };
-
   const handleDeleteSubcategory = (sub: Subcategory) => {
     Alert.alert(
       "Delete subcategory",
@@ -225,7 +162,7 @@ export default function CategoriesScreen() {
       <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
         <Text className="text-2xl font-bold text-foreground">Categories</Text>
         <TouchableOpacity
-          onPress={() => setAddCatOpen(true)}
+          onPress={() => router.push("/(app)/more/categories/add")}
           className="bg-primary rounded-full w-9 h-9 items-center justify-center"
         >
           <Text className="text-primary-foreground text-xl leading-none">+</Text>
@@ -245,7 +182,7 @@ export default function CategoriesScreen() {
               expanded={expanded.has(cat.id)}
               onToggle={() => toggleExpand(cat.id)}
               onDelete={() => handleDeleteCategory(cat)}
-              onAddSub={() => setAddSubTarget(cat)}
+              onAddSub={() => router.push(`/(app)/more/categories/${cat.id}/add-sub`)}
               onDeleteSub={handleDeleteSubcategory}
             />
           ))}
@@ -259,32 +196,6 @@ export default function CategoriesScreen() {
           )}
         </ScrollView>
       )}
-
-      {/* Add category sheet */}
-      <Sheet
-        visible={addCatOpen}
-        onClose={() => setAddCatOpen(false)}
-        title="New category"
-      >
-        <NameInputForm
-          placeholder="e.g. Subscriptions"
-          submitLabel="Add category"
-          onSubmit={handleCreateCategory}
-        />
-      </Sheet>
-
-      {/* Add subcategory sheet */}
-      <Sheet
-        visible={!!addSubTarget}
-        onClose={() => setAddSubTarget(null)}
-        title={`Add to ${addSubTarget?.name ?? ""}`}
-      >
-        <NameInputForm
-          placeholder="e.g. Netflix"
-          submitLabel="Add subcategory"
-          onSubmit={handleCreateSubcategory}
-        />
-      </Sheet>
     </View>
   );
 }

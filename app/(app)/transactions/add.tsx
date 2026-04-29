@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { View, Text, Switch, TouchableOpacity } from "react-native";
+import { View, Text, Switch, TouchableOpacity, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Sheet } from "~/components/ui/sheet";
+import { Ionicons } from "@expo/vector-icons";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Select } from "~/components/ui/select";
@@ -35,12 +37,9 @@ const TYPE_CONFIG: Record<TransactionType, { bg: string; border: string; color: 
   transfer: { bg: "rgba(59,130,246,0.15)",  border: "rgba(59,130,246,0.4)",  color: "#3b82f6" },
 };
 
-interface Props {
-  visible: boolean;
-  onClose: () => void;
-}
-
-export function AddTransactionSheet({ visible, onClose }: Props) {
+export default function AddTransactionScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [type, setType] = useState<TransactionType>("expense");
   const { workspaceId } = useWorkspace();
   const { data: accounts } = useAccounts();
@@ -52,7 +51,6 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
     handleSubmit,
     watch,
     setValue,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -102,9 +100,7 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
       reimbursed: data.reimbursed ? 1 : 0,
     });
 
-    reset();
-    setType("expense");
-    onClose();
+    router.back();
   };
 
   const accountOptions = accounts.map((a) => ({ label: a.name, value: a.id }));
@@ -113,11 +109,36 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
     selectedCategory?.subcategories.map((s) => ({ label: s.name, value: s.name })) ?? [];
 
   return (
-    <Sheet visible={visible} onClose={onClose} title="Add transaction">
-      <View className="gap-5 pb-4">
+    <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
+      {/* Header */}
+      <View
+        style={{
+          paddingTop: insets.top + 12,
+          paddingHorizontal: 16,
+          paddingBottom: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+          <Ionicons name="arrow-back" size={22} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+          Add transaction
+        </Text>
+      </View>
 
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: insets.bottom + 32,
+          gap: 20,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Type toggle */}
-        <View className="flex-row gap-2">
+        <View style={{ flexDirection: "row", gap: 8 }}>
           {(["expense", "income", "transfer"] as TransactionType[]).map((t) => {
             const isActive = type === t;
             const cfg = TYPE_CONFIG[t];
@@ -151,11 +172,11 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
         </View>
 
         {/* Date (read-only, defaults to today) */}
-        <View className="flex-row items-center justify-between px-1">
-          <Text className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 }}>
+          <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
             Date
           </Text>
-          <Text className="text-sm font-semibold text-foreground">{dateLabel}</Text>
+          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>{dateLabel}</Text>
         </View>
 
         {/* Amount */}
@@ -208,7 +229,7 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
           )}
         />
 
-        {/* Subcategory — only when selected category has subcategories */}
+        {/* Subcategory */}
         {hasSubcategories && (
           <Controller
             control={control}
@@ -269,21 +290,26 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
           )}
         />
 
-        {/* Reimbursed — always rendered to prevent height jump; hidden when not expense */}
+        {/* Reimbursed */}
         <Controller
           control={control}
           name="reimbursed"
           render={({ field: { onChange, value } }) => (
             <View
-              className="flex-row items-center justify-between py-1"
-              style={{ opacity: type === "expense" ? 1 : 0 }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 4,
+                opacity: type === "expense" ? 1 : 0,
+              }}
               pointerEvents={type === "expense" ? "auto" : "none"}
             >
               <View>
-                <Text className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
                   Reimbursed
                 </Text>
-                <Text className="text-xs text-muted-foreground mt-0.5">
+                <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
                   Mark as to be paid back
                 </Text>
               </View>
@@ -298,15 +324,10 @@ export function AddTransactionSheet({ visible, onClose }: Props) {
         />
 
         {/* Save */}
-        <Button
-          onPress={handleSubmit(onSubmit)}
-          loading={isSubmitting}
-          className="mt-2"
-        >
+        <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
           Save transaction
         </Button>
-
-      </View>
-    </Sheet>
+      </ScrollView>
+    </View>
   );
 }
