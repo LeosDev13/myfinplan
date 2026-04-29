@@ -5,143 +5,13 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import { useAccounts, useAccountMutations } from "~/lib/database/accounts";
-import { useWorkspace } from "~/app/providers/WorkspaceProvider";
-import { AccountWithBalance, AccountType } from "~/lib/types";
-import { Sheet } from "~/components/ui/sheet";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
-import { Select } from "~/components/ui/select";
+import type { AccountWithBalance } from "~/lib/types";
 
 // ─── helpers ────────────────────────────────────────────────
 const formatCurrency = (cents: number, currency = "EUR") =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency }).format(cents / 100);
-
-// ─── form schema ────────────────────────────────────────────
-const accountSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  account_type: z.enum(["personal", "shared"]),
-  owner: z.string().min(1, "Owner is required"),
-  currency: z.string().length(3, "Must be 3-letter code"),
-  initial_balance: z.string().regex(/^-?\d+([.,]\d{1,2})?$/, "Invalid amount"),
-});
-type AccountFormData = z.infer<typeof accountSchema>;
-
-const ACCOUNT_TYPE_OPTIONS: { label: string; value: AccountType }[] = [
-  { label: "Personal", value: "personal" },
-  { label: "Shared", value: "shared" },
-];
-
-// ─── account form ────────────────────────────────────────────
-function AccountForm({
-  defaultValues,
-  onSubmit,
-  submitLabel,
-}: {
-  defaultValues?: Partial<AccountFormData>;
-  onSubmit: (data: AccountFormData) => Promise<void>;
-  submitLabel: string;
-}) {
-  const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<AccountFormData>({
-    resolver: zodResolver(accountSchema),
-    defaultValues: {
-      account_type: "personal",
-      currency: "EUR",
-      initial_balance: "0",
-      ...defaultValues,
-    },
-  });
-
-  return (
-    <View className="gap-4 pb-4">
-      <Controller
-        control={control}
-        name="name"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            label="Account name"
-            placeholder="e.g. BBVA Current"
-            onChangeText={onChange}
-            onBlur={onBlur}
-            value={value}
-            error={errors.name?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="account_type"
-        render={({ field: { onChange, value } }) => (
-          <Select
-            label="Type"
-            options={ACCOUNT_TYPE_OPTIONS}
-            value={value}
-            onChange={onChange}
-            error={errors.account_type?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="owner"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            label="Owner"
-            placeholder="e.g. Leo"
-            autoCapitalize="words"
-            onChangeText={onChange}
-            onBlur={onBlur}
-            value={value}
-            error={errors.owner?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="currency"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            label="Currency"
-            placeholder="EUR"
-            autoCapitalize="characters"
-            maxLength={3}
-            onChangeText={(t) => onChange(t.toUpperCase())}
-            onBlur={onBlur}
-            value={value}
-            error={errors.currency?.message}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="initial_balance"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Input
-            label="Initial balance"
-            placeholder="0.00"
-            keyboardType="decimal-pad"
-            onChangeText={onChange}
-            onBlur={onBlur}
-            value={value}
-            error={errors.initial_balance?.message}
-          />
-        )}
-      />
-
-      <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting} className="mt-2">
-        {submitLabel}
-      </Button>
-    </View>
-  );
-}
 
 // ─── account row ─────────────────────────────────────────────
 function AccountRow({
@@ -177,36 +47,9 @@ function AccountRow({
 
 // ─── screen ──────────────────────────────────────────────────
 export default function AccountsScreen() {
+  const router = useRouter();
   const { data: accounts, isLoading } = useAccounts();
-  const { workspaceId } = useWorkspace();
-  const { create, update, remove } = useAccountMutations();
-
-  const [addOpen, setAddOpen] = useState(false);
-  const [editAccount, setEditAccount] = useState<AccountWithBalance | null>(null);
-
-  const parseCents = (value: string) =>
-    Math.round(parseFloat(value.replace(",", ".")) * 100);
-
-  const handleCreate = async (data: AccountFormData) => {
-    if (!workspaceId) return;
-    await create(workspaceId, {
-      name: data.name,
-      account_type: data.account_type,
-      owner: data.owner,
-      currency: data.currency,
-      initial_balance_cents: parseCents(data.initial_balance),
-    });
-    setAddOpen(false);
-  };
-
-  const handleUpdate = async (data: AccountFormData) => {
-    if (!editAccount) return;
-    await update(editAccount.id, {
-      name: data.name,
-      initial_balance_cents: parseCents(data.initial_balance),
-    });
-    setEditAccount(null);
-  };
+  const { remove } = useAccountMutations();
 
   const handleDelete = (account: AccountWithBalance) => {
     Alert.alert(
@@ -229,7 +72,7 @@ export default function AccountsScreen() {
       <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
         <Text className="text-2xl font-bold text-foreground">Accounts</Text>
         <TouchableOpacity
-          onPress={() => setAddOpen(true)}
+          onPress={() => router.push("/(app)/more/accounts/add")}
           className="bg-primary rounded-full w-9 h-9 items-center justify-center"
         >
           <Text className="text-primary-foreground text-xl leading-none">+</Text>
@@ -255,38 +98,12 @@ export default function AccountsScreen() {
           renderItem={({ item }) => (
             <AccountRow
               account={item}
-              onEdit={() => setEditAccount(item)}
+              onEdit={() => router.push(`/(app)/more/accounts/edit/${item.id}`)}
               onDelete={() => handleDelete(item)}
             />
           )}
         />
       )}
-
-      {/* Add sheet */}
-      <Sheet visible={addOpen} onClose={() => setAddOpen(false)} title="New account">
-        <AccountForm onSubmit={handleCreate} submitLabel="Add account" />
-      </Sheet>
-
-      {/* Edit sheet */}
-      <Sheet
-        visible={!!editAccount}
-        onClose={() => setEditAccount(null)}
-        title="Edit account"
-      >
-        {editAccount && (
-          <AccountForm
-            defaultValues={{
-              name: editAccount.name,
-              account_type: editAccount.account_type,
-              owner: editAccount.owner,
-              currency: editAccount.currency,
-              initial_balance: (editAccount.initial_balance_cents / 100).toString(),
-            }}
-            onSubmit={handleUpdate}
-            submitLabel="Save changes"
-          />
-        )}
-      </Sheet>
     </View>
   );
 }
