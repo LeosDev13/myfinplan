@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, type DimensionValue } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import {
@@ -274,7 +274,7 @@ export default function MetricsScreen() {
                           height: 4,
                           width: `${Math.round(
                             (cat.total_cents / maxCategoryTotal) * 100
-                          )}%` as DimensionValue,
+                          )}%`,
                         }}
                       />
                     </View>
