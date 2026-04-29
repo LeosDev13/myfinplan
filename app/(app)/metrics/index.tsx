@@ -51,7 +51,7 @@ function getPeriodRange(period: Period): {
       };
     case "year":
       return {
-        from: new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString(),
+        from: new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString(),
         to,
         trendMonths: 12,
       };
