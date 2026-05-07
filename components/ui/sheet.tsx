@@ -23,6 +23,7 @@ export function Sheet({ visible, onClose, title, children }: SheetProps) {
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      accessibilityViewIsModal
     >
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black/50" />
