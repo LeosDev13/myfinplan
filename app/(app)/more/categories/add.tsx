@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -31,9 +31,16 @@ export default function AddCategoryScreen() {
   });
 
   const onSubmit = async (data: FormData) => {
-    if (!workspaceId) return;
-    await createCategory(workspaceId, data.name);
-    router.back();
+    if (!workspaceId) {
+      Alert.alert("Not ready", "Workspace not loaded yet. Please wait a moment and try again.");
+      return;
+    }
+    try {
+      await createCategory(workspaceId, data.name);
+      router.back();
+    } catch (e: unknown) {
+      Alert.alert("Error", e instanceof Error ? e.message : "Could not save category. Please try again.");
+    }
   };
 
   return (

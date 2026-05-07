@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -34,8 +34,12 @@ export default function AddSubcategoryScreen() {
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
-    await createSubcategory(id, data.name);
-    router.back();
+    try {
+      await createSubcategory(id, data.name);
+      router.back();
+    } catch (e: unknown) {
+      Alert.alert("Error", e instanceof Error ? e.message : "Could not save subcategory. Please try again.");
+    }
   };
 
   return (

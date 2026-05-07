@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Switch, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, Switch, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -80,27 +80,34 @@ export default function AddTransactionScreen() {
   });
 
   const onSubmit = async (data: FormData) => {
-    if (!workspaceId) return;
-    const amountCents = Math.round(parseFloat(data.amount) * 100);
-    const tagsArray = data.tags
-      ? data.tags.split(",").map((t) => t.trim()).filter(Boolean)
-      : [];
+    if (!workspaceId) {
+      Alert.alert("Not ready", "Workspace not loaded yet. Please wait a moment and try again.");
+      return;
+    }
+    try {
+      const amountCents = Math.round(parseFloat(data.amount) * 100);
+      const tagsArray = data.tags
+        ? data.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : [];
 
-    await create(workspaceId, {
-      account_id: data.account_id,
-      transaction_type: type,
-      category: data.category,
-      subcategory: data.subcategory || null,
-      amount_cents: amountCents,
-      currency: selectedAccount?.currency ?? "EUR",
-      note: data.note || null,
-      merchant: data.merchant || null,
-      datetime: new Date().toISOString(),
-      tags: JSON.stringify(tagsArray),
-      reimbursed: data.reimbursed ? 1 : 0,
-    });
+      await create(workspaceId, {
+        account_id: data.account_id,
+        transaction_type: type,
+        category: data.category,
+        subcategory: data.subcategory || null,
+        amount_cents: amountCents,
+        currency: selectedAccount?.currency ?? "EUR",
+        note: data.note || null,
+        merchant: data.merchant || null,
+        datetime: new Date().toISOString(),
+        tags: JSON.stringify(tagsArray),
+        reimbursed: data.reimbursed ? 1 : 0,
+      });
 
-    router.back();
+      router.back();
+    } catch (e: unknown) {
+      Alert.alert("Error", e instanceof Error ? e.message : "Could not save transaction. Please try again.");
+    }
   };
 
   const accountOptions = accounts.map((a) => ({ label: a.name, value: a.id }));

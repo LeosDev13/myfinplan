@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -48,16 +48,23 @@ export default function AddAccountScreen() {
   });
 
   const onSubmit = async (data: FormData) => {
-    if (!workspaceId) return;
-    const cents = Math.round(parseFloat(data.initial_balance.replace(",", ".")) * 100);
-    await create(workspaceId, {
-      name: data.name,
-      account_type: data.account_type,
-      owner: data.owner,
-      currency: data.currency,
-      initial_balance_cents: cents,
-    });
-    router.back();
+    if (!workspaceId) {
+      Alert.alert("Not ready", "Workspace not loaded yet. Please wait a moment and try again.");
+      return;
+    }
+    try {
+      const cents = Math.round(parseFloat(data.initial_balance.replace(",", ".")) * 100);
+      await create(workspaceId, {
+        name: data.name,
+        account_type: data.account_type,
+        owner: data.owner,
+        currency: data.currency,
+        initial_balance_cents: cents,
+      });
+      router.back();
+    } catch (e: unknown) {
+      Alert.alert("Error", e instanceof Error ? e.message : "Could not save account. Please try again.");
+    }
   };
 
   return (

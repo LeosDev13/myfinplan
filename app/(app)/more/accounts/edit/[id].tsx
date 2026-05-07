@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -40,12 +40,16 @@ export default function EditAccountScreen() {
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
-    const cents = Math.round(parseFloat(data.initial_balance.replace(",", ".")) * 100);
-    await update(id, {
-      name: data.name,
-      initial_balance_cents: cents,
-    });
-    router.back();
+    try {
+      const cents = Math.round(parseFloat(data.initial_balance.replace(",", ".")) * 100);
+      await update(id, {
+        name: data.name,
+        initial_balance_cents: cents,
+      });
+      router.back();
+    } catch (e: unknown) {
+      Alert.alert("Error", e instanceof Error ? e.message : "Could not save changes. Please try again.");
+    }
   };
 
   return (

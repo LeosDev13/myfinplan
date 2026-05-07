@@ -10,7 +10,7 @@ const TABS: {
   iconActive: keyof typeof Ionicons.glyphMap;
 }[] = [
   { name: "index",              label: "Home",     icon: "home-outline",       iconActive: "home" },
-  { name: "transactions/index", label: "Activity", icon: "swap-vertical-outline", iconActive: "swap-vertical" },
+  { name: "transactions",       label: "Activity", icon: "swap-vertical-outline", iconActive: "swap-vertical" },
   { name: "budgets/index",      label: "Budgets",  icon: "wallet-outline",        iconActive: "wallet" },
   { name: "metrics/index",      label: "Metrics",  icon: "bar-chart-outline",     iconActive: "bar-chart" },
   { name: "more",               label: "Accounts", icon: "card-outline",          iconActive: "card" },
@@ -94,7 +94,7 @@ export default function AppLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
-      <Tabs.Screen name="transactions/index" options={{ title: "Transactions" }} />
+      <Tabs.Screen name="transactions" options={{ title: "Transactions" }} />
       <Tabs.Screen name="budgets/index" options={{ title: "Budgets" }} />
       <Tabs.Screen name="metrics/index" options={{ title: "Metrics" }} />
       <Tabs.Screen name="more" options={{ title: "Accounts" }} />
