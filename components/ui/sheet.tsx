@@ -41,7 +41,7 @@ export function Sheet({ visible, onClose, title, children }: SheetProps) {
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-lg font-semibold text-foreground">{title}</Text>
               <TouchableOpacity onPress={onClose}>
-                <Text className="text-muted-foreground text-base">Cancel</Text>
+                <Text className="text-destructive text-base font-medium">Cancel</Text>
               </TouchableOpacity>
             </View>
           )}
