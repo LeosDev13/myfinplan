@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { View, Text, TouchableOpacity, SectionList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTransactions } from "~/lib/database/transactions";
-import { AddTransactionSheet } from "./AddTransactionSheet";
 import { TransactionRow } from "./TransactionRow";
 import type { Transaction } from "~/lib/types";
 
@@ -39,7 +38,7 @@ function groupByDate(transactions: Transaction[]): Section[] {
 
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const router = useRouter();
   const { data: transactions } = useTransactions();
   const sections = groupByDate(transactions);
 
@@ -59,7 +58,7 @@ export default function ActivityScreen() {
         <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
           Activity
         </Text>
-        <TouchableOpacity onPress={() => setSheetVisible(true)} hitSlop={8}>
+        <TouchableOpacity onPress={() => router.push("/(app)/transactions/add")} hitSlop={8}>
           <Ionicons name="add" size={26} color="#10b981" />
         </TouchableOpacity>
       </View>
@@ -98,10 +97,6 @@ export default function ActivityScreen() {
         />
       )}
 
-      <AddTransactionSheet
-        visible={sheetVisible}
-        onClose={() => setSheetVisible(false)}
-      />
     </View>
   );
 }
