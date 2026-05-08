@@ -91,7 +91,9 @@ export default function ActivityScreen() {
             </Text>
           )}
           renderItem={({ item, index, section }) => (
-            <TransactionRow item={item} index={index} total={section.data.length} />
+            <TouchableOpacity onPress={() => router.push(`/(app)/transactions/edit/${item.id}`)}>
+              <TransactionRow item={item} index={index} total={section.data.length} />
+            </TouchableOpacity>
           )}
           stickySectionHeadersEnabled={false}
         />
