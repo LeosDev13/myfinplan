@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { supabase } from "~/lib/supabase";
 
 interface MenuRowProps {
   label: string;
@@ -34,14 +33,7 @@ export default function MoreScreen() {
         <MenuRow label="Settings" onPress={() => router.push("/(app)/more/settings")} />
       </View>
 
-      <View className="px-4 mt-auto mb-10">
-        <TouchableOpacity
-          onPress={() => supabase.auth.signOut()}
-          className="py-4 items-center rounded-xl border border-destructive"
-        >
-          <Text className="text-destructive font-semibold">Sign out</Text>
-        </TouchableOpacity>
-      </View>
+
     </View>
   );
 }
