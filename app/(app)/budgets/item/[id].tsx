@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,7 +36,7 @@ export default function BudgetItemScreen() {
   const router  = useRouter();
   const { workspaceId } = useWorkspace();
 
-  const { data: item }              = useBudgetItemWithSpend(itemId);
+  const { data: item, isLoading }   = useBudgetItemWithSpend(itemId);
   const { data: linkedTxns }        = useLinkedTransactions(itemId);
   const { data: unlinkedTxns }      = useUnlinkedTransactions(workspaceId ?? "", itemId);
   const { update, remove }          = useBudgetItemMutations();
@@ -99,6 +99,13 @@ export default function BudgetItemScreen() {
     ]);
   };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0a0a", alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color="#10b981" />
+      </View>
+    );
+  }
   if (!item) return null;
 
   const color    = spendColor(item.spent_cents, item.planned_cents);

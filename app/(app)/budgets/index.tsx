@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -87,7 +87,7 @@ export default function BudgetsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { workspaceId } = useWorkspace();
-  const { data: budgets } = useBudgets(workspaceId ?? "");
+  const { data: budgets, isLoading } = useBudgets(workspaceId ?? "");
   const { create, remove } = useBudgetMutations();
 
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -144,7 +144,11 @@ export default function BudgetsScreen() {
       </View>
 
       {/* List / empty state */}
-      {budgets.length === 0 ? (
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color="#10b981" />
+        </View>
+      ) : budgets.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600" }}>No budgets yet</Text>
           <Text style={{ color: "#525252", fontSize: 13 }}>Tap + to create one</Text>

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import {
@@ -83,9 +83,10 @@ export default function MetricsScreen() {
   const trendTo = useMemo(() => new Date().toISOString(), []);
 
   const ws = workspaceId ?? "";
-  const { data: summary }    = useMetricsSummary(ws, from, to);
-  const { data: categories } = useCategoryBreakdown(ws, from, to);
-  const { data: trendData }  = useMonthlyTrend(ws, trendFrom, trendTo);
+  const { data: summary,    isLoading: summaryLoading }    = useMetricsSummary(ws, from, to);
+  const { data: categories, isLoading: categoriesLoading } = useCategoryBreakdown(ws, from, to);
+  const { data: trendData,  isLoading: trendLoading }      = useMonthlyTrend(ws, trendFrom, trendTo);
+  const isLoading = summaryLoading || categoriesLoading || trendLoading;
 
   const savedCents = (summary?.income_cents ?? 0) - (summary?.expense_cents ?? 0);
 
@@ -151,7 +152,11 @@ export default function MetricsScreen() {
       </ScrollView>
 
       {/* Scrollable body */}
-      <ScrollView
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color="#10b981" />
+        </View>
+      ) : <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 12,
           paddingBottom: insets.bottom + 24,
@@ -394,7 +399,7 @@ export default function MetricsScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </ScrollView>}
     </View>
   );
 }
