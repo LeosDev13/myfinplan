@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { View, Text, Switch, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -42,6 +43,8 @@ export default function EditTransactionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: transaction, isLoading } = useTransaction(id);
   const [type, setType] = useState<TransactionType>("expense");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategoriesWithSubs();
   const { update, remove } = useTransactionMutations();
@@ -71,6 +74,7 @@ export default function EditTransactionScreen() {
   useEffect(() => {
     if (!transaction) return;
     setType(transaction.transaction_type as TransactionType);
+    setSelectedDate(new Date(transaction.datetime));
     const tags = (() => {
       try { return (JSON.parse(transaction.tags) as string[]).join(", "); }
       catch { return transaction.tags ?? ""; }
@@ -116,7 +120,7 @@ export default function EditTransactionScreen() {
         currency: selectedAccount?.currency ?? transaction?.currency ?? "EUR",
         note: data.note || null,
         merchant: data.merchant || null,
-        datetime: transaction?.datetime ?? new Date().toISOString(),
+        datetime: selectedDate.toISOString(),
         tags: JSON.stringify(tagsArray),
         reimbursed: data.reimbursed ? 1 : 0,
       });
@@ -233,13 +237,32 @@ export default function EditTransactionScreen() {
           })}
         </View>
 
-        {/* Date (read-only) */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 }}>
+        {/* Date picker */}
+        <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 }}
+        >
           <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
             Date
           </Text>
-          <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>{dateLabel}</Text>
-        </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>
+              {selectedDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+            </Text>
+            <Ionicons name="calendar-outline" size={14} color="#525252" />
+          </View>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="spinner"
+            onChange={(_: DateTimePickerEvent, date?: Date) => {
+              setShowDatePicker(false);
+              if (date) setSelectedDate(date);
+            }}
+          />
+        )}
 
         {/* Amount */}
         <Controller
