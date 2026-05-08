@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
   useBudgetWithTotals,
   useBudgetItemsWithSpend,
+  useBudgetMutations,
   useBudgetItemMutations,
   spendColor,
   spendProgress,
@@ -14,6 +15,7 @@ import {
 import { Sheet } from "~/components/ui/sheet";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { Select } from "~/components/ui/select";
 import { ProgressRing } from "~/components/ui/ProgressRing";
 import type { BudgetItemWithSpend } from "~/lib/types";
 
@@ -87,17 +89,68 @@ export default function BudgetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
-  const { data: budget }  = useBudgetWithTotals(id);
-  const { data: items }   = useBudgetItemsWithSpend(id);
-  const { create }        = useBudgetItemMutations();
+  const { data: budget }      = useBudgetWithTotals(id);
+  const { data: items }       = useBudgetItemsWithSpend(id);
+  const { update: updateBudget, remove: removeBudget } = useBudgetMutations();
+  const { create }            = useBudgetItemMutations();
 
+  // Add item sheet
   const [sheetVisible, setSheetVisible] = useState(false);
   const [itemName, setItemName]         = useState("");
   const [itemAmount, setItemAmount]     = useState("");
   const [saving, setSaving]             = useState(false);
   const [formError, setFormError]       = useState("");
 
+  // Edit budget sheet
+  const [editVisible, setEditVisible]   = useState(false);
+  const [editName, setEditName]         = useState("");
+  const [editCurrency, setEditCurrency] = useState<"EUR" | "USD" | "GBP">("EUR");
+  const [editNotes, setEditNotes]       = useState("");
+  const [editSaving, setEditSaving]     = useState(false);
+  const [editError, setEditError]       = useState("");
+
   const resetForm = () => { setItemName(""); setItemAmount(""); setFormError(""); };
+
+  // Pre-fill edit form when budget loads
+  useEffect(() => {
+    if (!budget) return;
+    setEditName(budget.name);
+    setEditCurrency(budget.currency as "EUR" | "USD" | "GBP");
+    setEditNotes(budget.notes ?? "");
+  }, [budget]);
+
+  const handleEditSave = async () => {
+    if (!budget || !editName.trim()) return;
+    setEditSaving(true);
+    try {
+      await updateBudget(budget.id, {
+        name: editName.trim(),
+        currency: editCurrency,
+        event_date: budget.event_date,
+        notes: editNotes.trim() || null,
+      });
+      setEditVisible(false);
+      setEditError("");
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert("Delete budget", `Delete "${budget?.name}"? This cannot be undone.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await removeBudget(id);
+          router.back();
+        },
+      },
+    ]);
+  };
 
   const handleSave = async () => {
     if (!budget || !itemName.trim() || !itemAmount) return;
@@ -141,9 +194,17 @@ export default function BudgetDetailScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Ionicons name="chevron-back" size={22} color="#10b981" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSheetVisible(true)} hitSlop={8}>
-          <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>+ Item</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          <TouchableOpacity onPress={() => setSheetVisible(true)} hitSlop={8}>
+            <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>+ Item</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setEditVisible(true)} hitSlop={8}>
+            <Ionicons name="pencil-outline" size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete} hitSlop={8}>
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Budget name + date */}
@@ -218,6 +279,32 @@ export default function BudgetDetailScreen() {
           )}
         />
       )}
+
+      {/* Edit budget sheet */}
+      <Sheet
+        visible={editVisible}
+        onClose={() => { setEditVisible(false); setEditError(""); }}
+        title="Edit budget"
+      >
+        <View className="gap-5 pb-4">
+          <Input label="Name" placeholder="Budget name" value={editName} onChangeText={setEditName} />
+          <Select
+            label="Currency"
+            options={[
+              { label: "EUR €", value: "EUR" },
+              { label: "USD $", value: "USD" },
+              { label: "GBP £", value: "GBP" },
+            ]}
+            value={editCurrency}
+            onChange={setEditCurrency}
+          />
+          <Input label="Notes" placeholder="Optional" value={editNotes} onChangeText={setEditNotes} />
+          {editError ? <Text style={{ color: "#ef4444", fontSize: 13 }}>{editError}</Text> : null}
+          <Button onPress={handleEditSave} loading={editSaving} disabled={!editName.trim()}>
+            Save changes
+          </Button>
+        </View>
+      </Sheet>
 
       {/* Add item sheet */}
       <Sheet
