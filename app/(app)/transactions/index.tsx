@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, SectionList } from "react-native";
+import { View, Text, TouchableOpacity, SectionList, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -39,7 +39,7 @@ function groupByDate(transactions: Transaction[]): Section[] {
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { data: transactions } = useTransactions();
+  const { data: transactions, isLoading } = useTransactions();
   const sections = groupByDate(transactions);
 
   return (
@@ -64,7 +64,11 @@ export default function ActivityScreen() {
       </View>
 
       {/* List */}
-      {sections.length === 0 ? (
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color="#10b981" />
+        </View>
+      ) : sections.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600" }}>No transactions yet</Text>
           <Text style={{ color: "#525252", fontSize: 13 }}>Tap + to add your first one</Text>

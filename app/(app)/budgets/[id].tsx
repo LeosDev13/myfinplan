@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -89,7 +89,7 @@ export default function BudgetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
-  const { data: budget }      = useBudgetWithTotals(id);
+  const { data: budget, isLoading } = useBudgetWithTotals(id);
   const { data: items }       = useBudgetItemsWithSpend(id);
   const { update: updateBudget, remove: removeBudget } = useBudgetMutations();
   const { create }            = useBudgetItemMutations();
@@ -171,6 +171,13 @@ export default function BudgetDetailScreen() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0a0a", alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color="#10b981" />
+      </View>
+    );
+  }
   if (!budget) return null;
 
   const color     = spendColor(budget.spent_cents, budget.total_planned_cents);
