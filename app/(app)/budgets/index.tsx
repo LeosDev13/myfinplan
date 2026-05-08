@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,9 +31,11 @@ function formatMoney(cents: number, currency: string): string {
 function BudgetCard({
   budget,
   onPress,
+  onLongPress,
 }: {
   budget: BudgetWithTotals;
   onPress: () => void;
+  onLongPress: () => void;
 }) {
   const color    = spendColor(budget.spent_cents, budget.total_planned_cents);
   const progress = spendProgress(budget.spent_cents, budget.total_planned_cents);
@@ -51,6 +53,7 @@ function BudgetCard({
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={onLongPress}
       style={{
         backgroundColor: "#141414",
         borderRadius: 16,
@@ -85,7 +88,7 @@ export default function BudgetsScreen() {
   const router = useRouter();
   const { workspaceId } = useWorkspace();
   const { data: budgets } = useBudgets(workspaceId ?? "");
-  const { create } = useBudgetMutations();
+  const { create, remove } = useBudgetMutations();
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [name, setName]           = useState("");
@@ -159,6 +162,12 @@ export default function BudgetsScreen() {
             <BudgetCard
               budget={item}
               onPress={() => router.push(`/budgets/${item.id}`)}
+              onLongPress={() =>
+                Alert.alert("Delete budget", `Delete "${item.name}"? This cannot be undone.`, [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Delete", style: "destructive", onPress: () => remove(item.id) },
+                ])
+              }
             />
           )}
         />

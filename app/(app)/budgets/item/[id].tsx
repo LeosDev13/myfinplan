@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import {
   useBudgetItemWithSpend,
   useLinkedTransactions,
   useUnlinkedTransactions,
+  useBudgetItemMutations,
   useBudgetLinkMutations,
   spendColor,
   spendProgress,
@@ -14,6 +15,7 @@ import {
 } from "~/lib/database/budgets";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import { Sheet } from "~/components/ui/sheet";
+import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { ProgressRing } from "~/components/ui/ProgressRing";
 import { TransactionRow } from "~/app/(app)/transactions/TransactionRow";
@@ -37,11 +39,65 @@ export default function BudgetItemScreen() {
   const { data: item }              = useBudgetItemWithSpend(itemId);
   const { data: linkedTxns }        = useLinkedTransactions(itemId);
   const { data: unlinkedTxns }      = useUnlinkedTransactions(workspaceId ?? "", itemId);
-  const { link }                    = useBudgetLinkMutations();
+  const { update, remove }          = useBudgetItemMutations();
+  const { link, unlink }            = useBudgetLinkMutations();
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selected, setSelected]           = useState<Set<string>>(new Set());
   const [linking, setLinking]             = useState(false);
+
+  // Edit item sheet
+  const [editVisible, setEditVisible]   = useState(false);
+  const [editName, setEditName]         = useState("");
+  const [editAmount, setEditAmount]     = useState("");
+  const [editSaving, setEditSaving]     = useState(false);
+  const [editError, setEditError]       = useState("");
+
+  const openEdit = () => {
+    if (!item) return;
+    setEditName(item.name);
+    setEditAmount((item.planned_cents / 100).toFixed(2));
+    setEditVisible(true);
+  };
+
+  const handleEditSave = async () => {
+    const planned_cents = Math.round(parseFloat(editAmount) * 100);
+    if (!editName.trim() || isNaN(planned_cents) || planned_cents <= 0) {
+      setEditError("Enter a valid name and amount");
+      return;
+    }
+    setEditSaving(true);
+    try {
+      await update(itemId, { name: editName.trim(), planned_cents });
+      setEditVisible(false);
+      setEditError("");
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert("Delete item", `Delete "${item?.name}"? This cannot be undone.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await remove(itemId);
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const handleUnlink = (txId: string, txLabel: string) => {
+    Alert.alert("Unlink transaction", `Remove "${txLabel}" from this item?`, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Unlink", style: "destructive", onPress: () => unlink(itemId, txId) },
+    ]);
+  };
 
   if (!item) return null;
 
@@ -85,9 +141,17 @@ export default function BudgetItemScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Ionicons name="chevron-back" size={22} color="#10b981" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setPickerVisible(true)} hitSlop={8}>
-          <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>Link txn</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          <TouchableOpacity onPress={() => setPickerVisible(true)} hitSlop={8}>
+            <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>Link txn</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openEdit} hitSlop={8}>
+            <Ionicons name="pencil-outline" size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete} hitSlop={8}>
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Item name */}
@@ -155,15 +219,37 @@ export default function BudgetItemScreen() {
           contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 16 }}
         >
           {linkedTxns.map((tx, index) => (
-            <TransactionRow
+            <TouchableOpacity
               key={tx.id}
-              item={tx}
-              index={index}
-              total={linkedTxns.length}
-            />
+              onLongPress={() => handleUnlink(tx.id, tx.merchant || tx.category)}
+            >
+              <TransactionRow item={tx} index={index} total={linkedTxns.length} />
+            </TouchableOpacity>
           ))}
         </ScrollView>
       )}
+
+      {/* Edit item sheet */}
+      <Sheet
+        visible={editVisible}
+        onClose={() => { setEditVisible(false); setEditError(""); }}
+        title="Edit item"
+      >
+        <View className="gap-5 pb-4">
+          <Input label="Name" placeholder="Item name" value={editName} onChangeText={setEditName} />
+          <Input
+            label="Planned amount"
+            placeholder="0.00"
+            keyboardType="decimal-pad"
+            value={editAmount}
+            onChangeText={setEditAmount}
+          />
+          {editError ? <Text style={{ color: "#ef4444", fontSize: 13 }}>{editError}</Text> : null}
+          <Button onPress={handleEditSave} loading={editSaving} disabled={!editName.trim()}>
+            Save changes
+          </Button>
+        </View>
+      </Sheet>
 
       {/* Transaction picker sheet */}
       <Sheet

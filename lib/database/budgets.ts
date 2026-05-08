@@ -154,7 +154,33 @@ export function useBudgetMutations() {
     return id;
   };
 
-  return { create };
+  const update = async (
+    id: string,
+    data: {
+      name: string;
+      currency: string;
+      event_date: string | null;
+      notes: string | null;
+    }
+  ) => {
+    await db.execute(
+      `UPDATE budgets SET name = ?, currency = ?, event_date = ?, notes = ? WHERE id = ?`,
+      [data.name, data.currency, data.event_date, data.notes, id]
+    );
+  };
+
+  const remove = async (id: string) => {
+    // Cascade: remove links → items → budget
+    await db.execute(
+      `DELETE FROM budget_item_transactions WHERE budget_item_id IN
+         (SELECT id FROM budget_items WHERE budget_id = ?)`,
+      [id]
+    );
+    await db.execute(`DELETE FROM budget_items WHERE budget_id = ?`, [id]);
+    await db.execute(`DELETE FROM budgets WHERE id = ?`, [id]);
+  };
+
+  return { create, update, remove };
 }
 
 export function useBudgetItemMutations() {
@@ -176,7 +202,25 @@ export function useBudgetItemMutations() {
     return id;
   };
 
-  return { create };
+  const update = async (
+    id: string,
+    data: { name: string; planned_cents: number }
+  ) => {
+    await db.execute(
+      `UPDATE budget_items SET name = ?, planned_cents = ? WHERE id = ?`,
+      [data.name, data.planned_cents, id]
+    );
+  };
+
+  const remove = async (id: string) => {
+    await db.execute(
+      `DELETE FROM budget_item_transactions WHERE budget_item_id = ?`,
+      [id]
+    );
+    await db.execute(`DELETE FROM budget_items WHERE id = ?`, [id]);
+  };
+
+  return { create, update, remove };
 }
 
 export function useBudgetLinkMutations() {
