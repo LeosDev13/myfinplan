@@ -73,7 +73,7 @@ export default function DashboardScreen() {
   const monthFrom = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), [now]);
   const monthTo = useMemo(() => now.toISOString(), [now]);
 
-  const { data: summary } = useMetricsSummary(workspaceId ?? null, monthFrom, monthTo);
+  const { data: summary } = useMetricsSummary(workspaceId ?? "", monthFrom, monthTo);
 
   const netWorthCents = useMemo(
     () => accounts.reduce((sum, a) => sum + a.balance_cents, 0),
