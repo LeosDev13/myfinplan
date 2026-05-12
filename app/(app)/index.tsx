@@ -7,6 +7,7 @@ import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import { useAccounts } from "~/lib/database/accounts";
 import { useTransactions } from "~/lib/database/transactions";
 import { useMetricsSummary } from "~/lib/database/metrics";
+import { useCategoriesWithSubs, useCategorySeed } from "~/lib/database/categories";
 import { TransactionRow } from "~/app/(app)/transactions/TransactionRow";
 import type { AccountWithBalance } from "~/lib/types";
 
@@ -67,6 +68,8 @@ export default function DashboardScreen() {
   const { workspaceId } = useWorkspace();
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
+  const { data: categories } = useCategoriesWithSubs();
+  const { seedDefaults } = useCategorySeed();
   const { data: transactions } = useTransactions();
 
   const now = useMemo(() => new Date(), []);
@@ -105,9 +108,9 @@ export default function DashboardScreen() {
           {/* Steps */}
           <View style={{ gap: 16 }}>
             {[
-              { step: "1", title: "Add an account", desc: "Start by adding your bank account, credit card, or cash wallet.", done: false },
-              { step: "2", title: "Log transactions", desc: "Record your income and expenses as they happen.", done: false },
-              { step: "3", title: "Track your finances", desc: "See your net worth, spending trends, and stay on budget.", done: false },
+              { step: "1", title: "Add an account", desc: "Add your bank account, credit card, or cash wallet." },
+              { step: "2", title: "Log transactions", desc: "Record income and expenses — we'll set up common categories for you." },
+              { step: "3", title: "Track your finances", desc: "See your net worth, spending trends, and stay on budget." },
             ].map(({ step, title, desc }) => (
               <View key={step} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
                 <View style={{
@@ -128,7 +131,12 @@ export default function DashboardScreen() {
 
           {/* CTA */}
           <TouchableOpacity
-            onPress={() => router.push("/(app)/more/accounts/add")}
+            onPress={async () => {
+              if (workspaceId && categories.length === 0) {
+                await seedDefaults(workspaceId);
+              }
+              router.push("/(app)/more/accounts/add");
+            }}
             style={{
               backgroundColor: "#10b981",
               borderRadius: 16,
@@ -136,7 +144,7 @@ export default function DashboardScreen() {
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>Add your first account</Text>
+            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>Get started</Text>
           </TouchableOpacity>
         </View>
       </View>
