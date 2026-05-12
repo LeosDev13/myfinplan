@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import { cn } from "~/lib/utils";
+import { View, Text, TouchableOpacity, ActionSheetIOS, Platform, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Option<T extends string> {
   label: string;
@@ -21,35 +21,66 @@ export function Select<T extends string>({
   onChange,
   error,
 }: SelectProps<T>) {
+  const selected = options.find((o) => o.value === value);
+
+  const open = () => {
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...options.map((o) => o.label), "Cancel"],
+          cancelButtonIndex: options.length,
+          userInterfaceStyle: "dark",
+        },
+        (index) => {
+          if (index < options.length) {
+            onChange(options[index].value);
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        label ?? "Select",
+        undefined,
+        [
+          ...options.map((o) => ({
+            text: o.label,
+            onPress: () => onChange(o.value),
+          })),
+          { text: "Cancel", style: "cancel" as const },
+        ]
+      );
+    }
+  };
+
   return (
-    <View className="gap-1.5">
+    <View style={{ gap: 6 }}>
       {label && (
-        <Text className="text-sm font-medium text-foreground">{label}</Text>
+        <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
+          {label}
+        </Text>
       )}
-      <View className="flex-row gap-2 flex-wrap">
-        {options.map((opt) => (
-          <TouchableOpacity
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            className={cn(
-              "px-4 py-2.5 rounded-lg border",
-              value === opt.value
-                ? "bg-primary border-primary"
-                : "bg-background border-input"
-            )}
-          >
-            <Text
-              className={cn(
-                "text-sm font-medium",
-                value === opt.value ? "text-primary-foreground" : "text-foreground"
-              )}
-            >
-              {opt.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {error && <Text className="text-sm text-destructive">{error}</Text>}
+      <TouchableOpacity
+        onPress={open}
+        style={{
+          height: 52,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: error ? "#ef4444" : "#1f1f1f",
+          backgroundColor: "#0a0a0a",
+          paddingHorizontal: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text style={{ color: selected ? "#ffffff" : "#525252", fontSize: 15, fontWeight: "500" }}>
+          {selected?.label ?? "Select…"}
+        </Text>
+        <Ionicons name="chevron-expand-outline" size={16} color="#525252" />
+      </TouchableOpacity>
+      {error && (
+        <Text style={{ color: "#ef4444", fontSize: 12 }}>{error}</Text>
+      )}
     </View>
   );
 }
