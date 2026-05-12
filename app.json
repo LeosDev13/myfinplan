@@ -1,26 +1,29 @@
 {
   "expo": {
-    "name": "myfinplan-mobile",
+    "name": "MyFinPlan",
     "slug": "myfinplan-mobile",
     "scheme": "myfinplan",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0a0a"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.leos1113.myfinplan-mobile"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.leos1113.myfinplan",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.leos1113.myfinplan",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0a0a0a"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -35,6 +38,11 @@
       "expo-sqlite",
       "@journeyapps/react-native-quick-sqlite",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
   }
 }

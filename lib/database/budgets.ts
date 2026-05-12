@@ -1,4 +1,5 @@
 import { useQuery, usePowerSync } from "@powersync/react-native";
+import { generateId } from "~/lib/uuid";
 import {
   BudgetWithTotals,
   BudgetItemWithSpend,
@@ -137,7 +138,7 @@ export function useBudgetMutations() {
       notes: string | null;
     }
   ): Promise<string> => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     await db.execute(
       `INSERT INTO budgets (id, workspace_id, name, currency, event_date, notes, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -193,7 +194,7 @@ export function useBudgetItemMutations() {
       planned_cents: number;
     }
   ): Promise<string> => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     await db.execute(
       `INSERT INTO budget_items (id, budget_id, name, planned_cents, created_at)
        VALUES (?, ?, ?, ?, ?)`,

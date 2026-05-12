@@ -1,4 +1,5 @@
 import { useQuery, usePowerSync } from "@powersync/react-native";
+import { generateId } from "~/lib/uuid";
 import { Category, Subcategory } from "../types";
 
 export interface CategoryWithSubs extends Category {
@@ -70,7 +71,7 @@ export function useCategoryMutations() {
   const db = usePowerSync();
 
   const createCategory = async (workspaceId: string, name: string) => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     await db.execute(
       `INSERT INTO categories (id, workspace_id, name, is_built_in, created_at)
        VALUES (?, ?, ?, 0, ?)`,
@@ -92,7 +93,7 @@ export function useCategoryMutations() {
   };
 
   const createSubcategory = async (categoryId: string, name: string) => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     await db.execute(
       `INSERT INTO subcategories (id, category_id, name, is_built_in, created_at)
        VALUES (?, ?, ?, 0, ?)`,
