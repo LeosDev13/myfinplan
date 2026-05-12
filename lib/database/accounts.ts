@@ -1,4 +1,5 @@
 import { useQuery, usePowerSync } from "@powersync/react-native";
+import { v4 as uuidv4 } from "uuid";
 import { AccountWithBalance } from "../types";
 
 export function useAccounts() {
@@ -29,7 +30,7 @@ export function useAccountMutations() {
       initial_balance_cents: number;
     }
   ) => {
-    const id = crypto.randomUUID();
+    const id = uuidv4();
     await db.execute(
       `INSERT INTO accounts (id, workspace_id, name, account_type, owner, currency, initial_balance_cents, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,

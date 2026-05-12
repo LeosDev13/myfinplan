@@ -1,4 +1,5 @@
 import { useQuery, usePowerSync } from "@powersync/react-native";
+import { v4 as uuidv4 } from "uuid";
 import { Transaction } from "../types";
 
 export function useTransactions() {
@@ -34,7 +35,7 @@ export function useTransactionMutations() {
       reimbursed: number;
     }
   ): Promise<string> => {
-    const id = crypto.randomUUID();
+    const id = uuidv4();
     await db.execute(
       `INSERT INTO transactions
          (id, workspace_id, account_id, transaction_type, category, subcategory,
