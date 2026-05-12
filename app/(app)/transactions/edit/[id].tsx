@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { View, Text, Switch, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, Switch, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -170,7 +170,7 @@ export default function EditTransactionScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#0a0a0a" }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       {/* Header */}
       <View
         style={{
@@ -409,6 +409,6 @@ export default function EditTransactionScreen() {
           Save changes
         </Button>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

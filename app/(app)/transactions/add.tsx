@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { View, Text, Switch, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, Switch, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useForm, Controller } from "react-hook-form";
@@ -119,7 +119,7 @@ export default function AddTransactionScreen() {
     selectedCategory?.subcategories.map((s) => ({ label: s.name, value: s.name })) ?? [];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#0a0a0a" }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       {/* Header */}
       <View
         style={{
@@ -356,6 +356,6 @@ export default function AddTransactionScreen() {
           Save transaction
         </Button>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
