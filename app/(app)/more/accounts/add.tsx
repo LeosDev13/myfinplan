@@ -16,7 +16,7 @@ const schema = z.object({
   name: z.string().min(1, "Name is required"),
   account_type: z.enum(["personal", "shared"]),
   owner: z.string().min(1, "Owner is required"),
-  currency: z.string().length(3, "Must be 3-letter code"),
+  currency: z.string().min(1, "Currency is required"),
   initial_balance: z.string().regex(/^-?\d+([.,]\d{1,2})?$/, "Invalid amount"),
 });
 type FormData = z.infer<typeof schema>;
@@ -24,6 +24,27 @@ type FormData = z.infer<typeof schema>;
 const ACCOUNT_TYPE_OPTIONS: { label: string; value: AccountType }[] = [
   { label: "Personal", value: "personal" },
   { label: "Shared", value: "shared" },
+];
+
+const CURRENCY_OPTIONS = [
+  { label: "EUR — Euro", value: "EUR" },
+  { label: "USD — US Dollar", value: "USD" },
+  { label: "GBP — British Pound", value: "GBP" },
+  { label: "CHF — Swiss Franc", value: "CHF" },
+  { label: "CAD — Canadian Dollar", value: "CAD" },
+  { label: "AUD — Australian Dollar", value: "AUD" },
+  { label: "JPY — Japanese Yen", value: "JPY" },
+  { label: "SEK — Swedish Krona", value: "SEK" },
+  { label: "NOK — Norwegian Krone", value: "NOK" },
+  { label: "DKK — Danish Krone", value: "DKK" },
+  { label: "PLN — Polish Złoty", value: "PLN" },
+  { label: "MXN — Mexican Peso", value: "MXN" },
+  { label: "BRL — Brazilian Real", value: "BRL" },
+  { label: "INR — Indian Rupee", value: "INR" },
+  { label: "SGD — Singapore Dollar", value: "SGD" },
+  { label: "HKD — Hong Kong Dollar", value: "HKD" },
+  { label: "NZD — New Zealand Dollar", value: "NZD" },
+  { label: "ZAR — South African Rand", value: "ZAR" },
 ];
 
 export default function AddAccountScreen() {
@@ -143,15 +164,12 @@ export default function AddAccountScreen() {
         <Controller
           control={control}
           name="currency"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
+          render={({ field: { onChange, value } }) => (
+            <Select
               label="Currency"
-              placeholder="EUR"
-              autoCapitalize="characters"
-              maxLength={3}
-              onChangeText={(t) => onChange(t.toUpperCase())}
-              onBlur={onBlur}
+              options={CURRENCY_OPTIONS}
               value={value}
+              onChange={onChange}
               error={errors.currency?.message}
             />
           )}

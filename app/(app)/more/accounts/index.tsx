@@ -1,19 +1,24 @@
+import { useRef } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   Alert,
+  Animated,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAccounts, useAccountMutations } from "~/lib/database/accounts";
 import type { AccountWithBalance } from "~/lib/types";
 
-// ─── helpers ────────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────────
 const formatCurrency = (cents: number, currency = "EUR") =>
-  new Intl.NumberFormat("es-ES", { style: "currency", currency }).format(cents / 100);
+  new Intl.NumberFormat("en-IE", { style: "currency", currency }).format(cents / 100);
 
-// ─── account row ─────────────────────────────────────────────
+// ─── swipeable row ───────────────────────────────────────────
 function AccountRow({
   account,
   onEdit,
@@ -23,31 +28,83 @@ function AccountRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const swipeRef = useRef<Swipeable>(null);
   const balance = account.balance_cents;
   const isPositive = balance >= 0;
 
+  const renderRightActions = (
+    _progress: Animated.AnimatedInterpolation<number>,
+    dragX: Animated.AnimatedInterpolation<number>
+  ) => {
+    const translateX = dragX.interpolate({
+      inputRange: [-80, 0],
+      outputRange: [0, 80],
+      extrapolate: "clamp",
+    });
+    return (
+      <Animated.View style={{ transform: [{ translateX }], flexDirection: "row" }}>
+        <TouchableOpacity
+          onPress={() => {
+            swipeRef.current?.close();
+            onDelete();
+          }}
+          style={{
+            backgroundColor: "#ef4444",
+            width: 80,
+            alignItems: "center",
+            justifyContent: "center",
+            borderTopRightRadius: 12,
+            borderBottomRightRadius: 12,
+          }}
+        >
+          <Ionicons name="trash-outline" size={20} color="#ffffff" />
+          <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "600", marginTop: 3 }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
   return (
-    <TouchableOpacity
-      onPress={onEdit}
-      onLongPress={onDelete}
-      className="flex-row items-center justify-between px-4 py-4 bg-card rounded-xl border border-border"
+    <Swipeable
+      ref={swipeRef}
+      renderRightActions={renderRightActions}
+      rightThreshold={40}
+      overshootRight={false}
     >
-      <View className="flex-1">
-        <Text className="text-base font-semibold text-foreground">{account.name}</Text>
-        <Text className="text-sm text-muted-foreground mt-0.5">
-          {account.account_type === "shared" ? "Shared" : account.owner} · {account.currency}
+      <TouchableOpacity
+        onPress={onEdit}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          backgroundColor: "#141414",
+          borderRadius: 12,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "600" }}>
+            {account.name}
+          </Text>
+          <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
+            {account.account_type === "shared" ? "Shared" : account.owner} · {account.currency}
+          </Text>
+        </View>
+        <Text style={{ color: isPositive ? "#10b981" : "#ef4444", fontSize: 15, fontWeight: "700" }}>
+          {formatCurrency(balance, account.currency)}
         </Text>
-      </View>
-      <Text className={`text-base font-semibold ${isPositive ? "text-green-600" : "text-destructive"}`}>
-        {formatCurrency(balance, account.currency)}
-      </Text>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Swipeable>
   );
 }
 
 // ─── screen ──────────────────────────────────────────────────
 export default function AccountsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { data: accounts, isLoading } = useAccounts();
   const { remove } = useAccountMutations();
 
@@ -57,44 +114,54 @@ export default function AccountsScreen() {
       `Delete "${account.name}"? This cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => remove(account.id),
-        },
+        { text: "Delete", style: "destructive", onPress: () => remove(account.id) },
       ]
     );
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
       {/* Header */}
-      <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-foreground">Accounts</Text>
+      <View
+        style={{
+          paddingTop: insets.top + 12,
+          paddingBottom: 12,
+          paddingHorizontal: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
+          Accounts
+        </Text>
         <TouchableOpacity
           onPress={() => router.push("/(app)/more/accounts/add")}
-          className="bg-primary rounded-full w-9 h-9 items-center justify-center"
+          hitSlop={8}
         >
-          <Text className="text-primary-foreground text-xl leading-none">+</Text>
+          <Ionicons name="add" size={26} color="#10b981" />
         </TouchableOpacity>
       </View>
 
       {/* List */}
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-muted-foreground">Loading...</Text>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ color: "#525252" }}>Loading…</Text>
         </View>
       ) : accounts.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-muted-foreground text-center text-base">
-            No accounts yet.{"\n"}Tap + to add your first account.
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600", textAlign: "center" }}>
+            No accounts yet
+          </Text>
+          <Text style={{ color: "#525252", fontSize: 13, marginTop: 4, textAlign: "center" }}>
+            Tap + to add your first account
           </Text>
         </View>
       ) : (
         <FlatList
           data={accounts}
           keyExtractor={(item) => item.id}
-          contentContainerClassName="px-4 gap-3 pb-8"
+          contentContainerStyle={{ paddingHorizontal: 12, gap: 8, paddingBottom: insets.bottom + 16 }}
           renderItem={({ item }) => (
             <AccountRow
               account={item}
