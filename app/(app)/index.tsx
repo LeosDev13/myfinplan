@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -66,7 +66,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { workspaceId } = useWorkspace();
 
-  const { data: accounts } = useAccounts();
+  const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const { data: transactions } = useTransactions();
 
   const now = useMemo(() => new Date(), []);
@@ -82,6 +82,66 @@ export default function DashboardScreen() {
 
   const savedCents = (summary?.income_cents ?? 0) - (summary?.expense_cents ?? 0);
   const recentTransactions = transactions.slice(0, 5);
+
+  if (accountsLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0a0a", alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color="#10b981" />
+      </View>
+    );
+  }
+
+  if (accounts.length === 0) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
+        <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
+          <Text style={{ color: "#525252", fontSize: 13 }}>{greeting()}</Text>
+          <Text style={{ color: "#ffffff", fontSize: 26, fontWeight: "800", letterSpacing: -0.5, marginTop: 2 }}>
+            Welcome
+          </Text>
+        </View>
+
+        <View style={{ flex: 1, paddingHorizontal: 16, justifyContent: "center", gap: 32 }}>
+          {/* Steps */}
+          <View style={{ gap: 16 }}>
+            {[
+              { step: "1", title: "Add an account", desc: "Start by adding your bank account, credit card, or cash wallet.", done: false },
+              { step: "2", title: "Log transactions", desc: "Record your income and expenses as they happen.", done: false },
+              { step: "3", title: "Track your finances", desc: "See your net worth, spending trends, and stay on budget.", done: false },
+            ].map(({ step, title, desc }) => (
+              <View key={step} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
+                <View style={{
+                  width: 28, height: 28, borderRadius: 14,
+                  backgroundColor: "#10b981",
+                  alignItems: "center", justifyContent: "center",
+                  marginTop: 1,
+                }}>
+                  <Text style={{ color: "#ffffff", fontSize: 12, fontWeight: "800" }}>{step}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "700", marginBottom: 2 }}>{title}</Text>
+                  <Text style={{ color: "#525252", fontSize: 13, lineHeight: 18 }}>{desc}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* CTA */}
+          <TouchableOpacity
+            onPress={() => router.push("/(app)/more/accounts/add")}
+            style={{
+              backgroundColor: "#10b981",
+              borderRadius: 16,
+              padding: 18,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>Add your first account</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
