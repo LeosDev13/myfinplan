@@ -1,0 +1,224 @@
+{
+  "date": {
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "common": {
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading…",
+    "error": "Error",
+    "seeAll": "See all",
+    "optional": "Optional",
+    "cannotBeUndone": "This cannot be undone."
+  },
+  "onboarding": {
+    "greeting": "Welcome",
+    "step1Title": "Add an account",
+    "step1Desc": "Add your bank account, credit card, or cash wallet.",
+    "step2Title": "Log transactions",
+    "step2Desc": "Record income and expenses — we'll set up common categories for you.",
+    "step3Title": "Track your finances",
+    "step3Desc": "See your net worth, spending trends, and stay on budget.",
+    "cta": "Get started"
+  },
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "netWorth": "Net Worth",
+    "accounts": "account",
+    "accounts_plural": "accounts",
+    "recentActivity": "Recent Activity",
+    "noTransactions": "No transactions yet",
+    "noTransactionsHint": "Tap + to add your first one",
+    "addTransaction": "Add Transaction"
+  },
+  "transactions": {
+    "title": "Activity",
+    "noTransactions": "No transactions yet",
+    "noTransactionsHint": "Tap + to add your first one",
+    "add": "Add transaction",
+    "edit": "Edit transaction",
+    "save": "Save transaction",
+    "type": {
+      "expense": "Expense",
+      "income": "Income",
+      "transfer": "Transfer"
+    },
+    "fields": {
+      "date": "Date",
+      "amount": "Amount",
+      "account": "Account",
+      "category": "Category",
+      "subcategory": "Subcategory",
+      "merchant": "Merchant",
+      "merchantPlaceholder": "Who did you pay?",
+      "note": "Note",
+      "notePlaceholder": "Optional memo",
+      "tags": "Tags",
+      "tagsPlaceholder": "groceries, weekend (comma-separated)",
+      "reimbursed": "Reimbursed",
+      "reimbursedDesc": "Mark as to be paid back"
+    },
+    "errors": {
+      "amountRequired": "Amount is required",
+      "amountInvalid": "Enter a valid amount",
+      "accountRequired": "Account is required",
+      "categoryRequired": "Category is required"
+    },
+    "delete": {
+      "title": "Delete transaction",
+      "confirm": "This cannot be undone."
+    },
+    "notFound": "Transaction not found.",
+    "notReady": "Workspace not loaded yet. Please wait a moment and try again."
+  },
+  "accounts": {
+    "title": "Accounts",
+    "add": "New account",
+    "edit": "Edit account",
+    "noAccounts": "No accounts yet",
+    "noAccountsHint": "Tap + to add your first account",
+    "fields": {
+      "name": "Account name",
+      "namePlaceholder": "e.g. BBVA Current",
+      "type": "Type",
+      "owner": "Owner",
+      "ownerPlaceholder": "e.g. Leo",
+      "currency": "Currency",
+      "initialBalance": "Initial balance"
+    },
+    "types": {
+      "personal": "Personal",
+      "shared": "Shared"
+    },
+    "save": "Add account",
+    "delete": {
+      "title": "Delete account",
+      "message": "Delete \"{{name}}\"? This cannot be undone."
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "add": "New category",
+    "addSub": "Add to {{name}}",
+    "noCategories": "No categories yet",
+    "noCategoriesHint": "Tap + to add your first category",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Subscriptions",
+      "subName": "Subcategory name",
+      "subNamePlaceholder": "e.g. Netflix"
+    },
+    "save": "Add category",
+    "saveSub": "Add subcategory",
+    "delete": {
+      "title": "Delete category",
+      "message": "Delete \"{{name}}\"?",
+      "hasTransactions": "This category has transactions and cannot be deleted."
+    }
+  },
+  "budgets": {
+    "title": "Budgets",
+    "add": "New budget",
+    "noBudgets": "No budgets yet",
+    "noBudgetsHint": "Tap + to create one",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Summer Holiday",
+      "currency": "Currency",
+      "eventDate": "Event Date",
+      "notes": "Notes"
+    },
+    "save": "Create budget",
+    "delete": {
+      "title": "Delete budget",
+      "message": "Delete \"{{name}}\"? This cannot be undone."
+    },
+    "items": {
+      "title": "No items yet",
+      "hint": "Tap + Item to add one",
+      "add": "Add item",
+      "noLinked": "No transactions linked yet",
+      "noLinkedHint": "Tap \"Link txn\" to add one",
+      "allLinked": "All transactions already linked",
+      "link": "Link txn",
+      "linkButton": "Link {{count}} transaction",
+      "linkButton_plural": "Link {{count}} transactions",
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "e.g. Flights",
+        "amount": "Planned amount"
+      },
+      "save": "Add item",
+      "delete": {
+        "title": "Delete item",
+        "message": "Delete \"{{name}}\"? This cannot be undone."
+      },
+      "unlink": {
+        "title": "Unlink transaction",
+        "message": "Remove \"{{name}}\" from this item?"
+      },
+      "stats": {
+        "spent": "Spent",
+        "left": "Left",
+        "planned": "Planned",
+        "remaining": "remaining",
+        "of": "of",
+        "linked": "Linked transactions"
+      }
+    },
+    "edit": "Edit budget",
+    "editSave": "Save changes"
+  },
+  "metrics": {
+    "title": "Metrics",
+    "periods": {
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "sixMonths": "6 months",
+      "year": "Year"
+    },
+    "summary": {
+      "income": "Income",
+      "spent": "Spent",
+      "saved": "Saved"
+    },
+    "topCategories": "Top Categories",
+    "noSpending": "No spending data for this period",
+    "cashFlow": "Monthly Cash Flow"
+  },
+  "more": {
+    "title": "More",
+    "accounts": "Accounts",
+    "categories": "Categories",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "appVersion": "App version",
+    "signOut": "Sign out",
+    "signOutConfirm": {
+      "title": "Sign out",
+      "message": "Are you sure you want to sign out?"
+    },
+    "deleteAccount": {
+      "label": "Delete account",
+      "alertTitle": "Delete account?",
+      "alertMessage": "All your accounts, transactions, budgets, and categories will be permanently deleted. This cannot be undone.",
+      "confirmTitle": "Are you absolutely sure?",
+      "confirmMessage": "Your data will be erased immediately and cannot be recovered.",
+      "confirm": "Yes, delete everything",
+      "deleting": "Deleting account…",
+      "errorTitle": "Could not delete account",
+      "errorMessage": "Something went wrong. Please try again or contact support."
+    }
+  }
+}

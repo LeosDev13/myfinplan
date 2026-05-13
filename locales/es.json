@@ -1,0 +1,224 @@
+{
+  "date": {
+    "today": "Hoy",
+    "yesterday": "Ayer"
+  },
+  "common": {
+    "save": "Guardar cambios",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "loading": "Cargando…",
+    "error": "Error",
+    "seeAll": "Ver todo",
+    "optional": "Opcional",
+    "cannotBeUndone": "Esta acción no se puede deshacer."
+  },
+  "onboarding": {
+    "greeting": "Bienvenido",
+    "step1Title": "Añade una cuenta",
+    "step1Desc": "Añade tu cuenta bancaria, tarjeta de crédito o efectivo.",
+    "step2Title": "Registra tus movimientos",
+    "step2Desc": "Apunta tus ingresos y gastos — configuraremos categorías comunes por ti.",
+    "step3Title": "Controla tus finanzas",
+    "step3Desc": "Visualiza tu patrimonio, tendencias de gasto y mantente dentro del presupuesto.",
+    "cta": "Empezar"
+  },
+  "greeting": {
+    "morning": "Buenos días",
+    "afternoon": "Buenas tardes",
+    "evening": "Buenas noches"
+  },
+  "dashboard": {
+    "title": "Inicio",
+    "netWorth": "Patrimonio neto",
+    "accounts": "cuenta",
+    "accounts_plural": "cuentas",
+    "recentActivity": "Actividad reciente",
+    "noTransactions": "Sin movimientos aún",
+    "noTransactionsHint": "Pulsa + para añadir el primero",
+    "addTransaction": "Añadir movimiento"
+  },
+  "transactions": {
+    "title": "Actividad",
+    "noTransactions": "Sin movimientos aún",
+    "noTransactionsHint": "Pulsa + para añadir el primero",
+    "add": "Añadir movimiento",
+    "edit": "Editar movimiento",
+    "save": "Guardar movimiento",
+    "type": {
+      "expense": "Gasto",
+      "income": "Ingreso",
+      "transfer": "Transferencia"
+    },
+    "fields": {
+      "date": "Fecha",
+      "amount": "Importe",
+      "account": "Cuenta",
+      "category": "Categoría",
+      "subcategory": "Subcategoría",
+      "merchant": "Comercio",
+      "merchantPlaceholder": "¿A quién pagaste?",
+      "note": "Nota",
+      "notePlaceholder": "Memo opcional",
+      "tags": "Etiquetas",
+      "tagsPlaceholder": "compra, fin de semana (separadas por coma)",
+      "reimbursed": "Reembolsable",
+      "reimbursedDesc": "Marcar como pendiente de cobro"
+    },
+    "errors": {
+      "amountRequired": "El importe es obligatorio",
+      "amountInvalid": "Introduce un importe válido",
+      "accountRequired": "La cuenta es obligatoria",
+      "categoryRequired": "La categoría es obligatoria"
+    },
+    "delete": {
+      "title": "Eliminar movimiento",
+      "confirm": "Esta acción no se puede deshacer."
+    },
+    "notFound": "Movimiento no encontrado.",
+    "notReady": "El espacio de trabajo aún no está listo. Espera un momento e inténtalo de nuevo."
+  },
+  "accounts": {
+    "title": "Cuentas",
+    "add": "Nueva cuenta",
+    "edit": "Editar cuenta",
+    "noAccounts": "Sin cuentas aún",
+    "noAccountsHint": "Pulsa + para añadir tu primera cuenta",
+    "fields": {
+      "name": "Nombre de la cuenta",
+      "namePlaceholder": "p. ej. BBVA Cuenta corriente",
+      "type": "Tipo",
+      "owner": "Titular",
+      "ownerPlaceholder": "p. ej. Leo",
+      "currency": "Divisa",
+      "initialBalance": "Saldo inicial"
+    },
+    "types": {
+      "personal": "Personal",
+      "shared": "Compartida"
+    },
+    "save": "Añadir cuenta",
+    "delete": {
+      "title": "Eliminar cuenta",
+      "message": "¿Eliminar \"{{name}}\"? Esta acción no se puede deshacer."
+    }
+  },
+  "categories": {
+    "title": "Categorías",
+    "add": "Nueva categoría",
+    "addSub": "Añadir a {{name}}",
+    "noCategories": "Sin categorías aún",
+    "noCategoriesHint": "Pulsa + para añadir tu primera categoría",
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "p. ej. Suscripciones",
+      "subName": "Nombre de subcategoría",
+      "subNamePlaceholder": "p. ej. Netflix"
+    },
+    "save": "Añadir categoría",
+    "saveSub": "Añadir subcategoría",
+    "delete": {
+      "title": "Eliminar categoría",
+      "message": "¿Eliminar \"{{name}}\"?",
+      "hasTransactions": "Esta categoría tiene movimientos y no puede eliminarse."
+    }
+  },
+  "budgets": {
+    "title": "Presupuestos",
+    "add": "Nuevo presupuesto",
+    "noBudgets": "Sin presupuestos aún",
+    "noBudgetsHint": "Pulsa + para crear uno",
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "p. ej. Vacaciones de verano",
+      "currency": "Divisa",
+      "eventDate": "Fecha del evento",
+      "notes": "Notas"
+    },
+    "save": "Crear presupuesto",
+    "delete": {
+      "title": "Eliminar presupuesto",
+      "message": "¿Eliminar \"{{name}}\"? Esta acción no se puede deshacer."
+    },
+    "items": {
+      "title": "Sin partidas aún",
+      "hint": "Pulsa + Partida para añadir una",
+      "add": "Añadir partida",
+      "noLinked": "Sin movimientos vinculados aún",
+      "noLinkedHint": "Pulsa \"Vincular\" para añadir uno",
+      "allLinked": "Todos los movimientos ya están vinculados",
+      "link": "Vincular",
+      "linkButton": "Vincular {{count}} movimiento",
+      "linkButton_plural": "Vincular {{count}} movimientos",
+      "fields": {
+        "name": "Nombre",
+        "namePlaceholder": "p. ej. Vuelos",
+        "amount": "Importe planificado"
+      },
+      "save": "Añadir partida",
+      "delete": {
+        "title": "Eliminar partida",
+        "message": "¿Eliminar \"{{name}}\"? Esta acción no se puede deshacer."
+      },
+      "unlink": {
+        "title": "Desvincular movimiento",
+        "message": "¿Quitar \"{{name}}\" de esta partida?"
+      },
+      "stats": {
+        "spent": "Gastado",
+        "left": "Restante",
+        "planned": "Planificado",
+        "remaining": "restante",
+        "of": "de",
+        "linked": "Movimientos vinculados"
+      }
+    },
+    "edit": "Editar presupuesto",
+    "editSave": "Guardar cambios"
+  },
+  "metrics": {
+    "title": "Métricas",
+    "periods": {
+      "thisMonth": "Este mes",
+      "lastMonth": "Mes anterior",
+      "sixMonths": "6 meses",
+      "year": "Año"
+    },
+    "summary": {
+      "income": "Ingresos",
+      "spent": "Gastado",
+      "saved": "Ahorrado"
+    },
+    "topCategories": "Principales categorías",
+    "noSpending": "Sin datos de gasto para este período",
+    "cashFlow": "Flujo de caja mensual"
+  },
+  "more": {
+    "title": "Más",
+    "accounts": "Cuentas",
+    "categories": "Categorías",
+    "settings": "Ajustes"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "account": "Cuenta",
+    "appVersion": "Versión de la app",
+    "signOut": "Cerrar sesión",
+    "signOutConfirm": {
+      "title": "Cerrar sesión",
+      "message": "¿Seguro que quieres cerrar sesión?"
+    },
+    "deleteAccount": {
+      "label": "Eliminar cuenta",
+      "alertTitle": "¿Eliminar cuenta?",
+      "alertMessage": "Se eliminarán permanentemente todas tus cuentas, movimientos, presupuestos y categorías. Esta acción no se puede deshacer.",
+      "confirmTitle": "¿Estás completamente seguro?",
+      "confirmMessage": "Tus datos se borrarán de inmediato y no podrán recuperarse.",
+      "confirm": "Sí, eliminar todo",
+      "deleting": "Eliminando cuenta…",
+      "errorTitle": "No se pudo eliminar la cuenta",
+      "errorMessage": "Algo salió mal. Inténtalo de nuevo o contacta con soporte."
+    }
+  }
+}

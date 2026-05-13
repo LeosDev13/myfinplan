@@ -1,11 +1,12 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/hooks/useAuth";
-
-// ─── sub-components ─────────────────────────────────────────────────────────
+import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 
 function SectionHeader({ label }: { label: string }) {
   return (
@@ -32,17 +33,19 @@ function SettingsRow({
   onPress,
   destructive = false,
   showChevron = true,
+  loading = false,
 }: {
   label: string;
   value?: string;
   onPress?: () => void;
   destructive?: boolean;
   showChevron?: boolean;
+  loading?: boolean;
 }) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={!onPress}
+      disabled={!onPress || loading}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -52,52 +55,170 @@ function SettingsRow({
         paddingHorizontal: 16,
         paddingVertical: 14,
         marginBottom: 2,
+        opacity: loading ? 0.6 : 1,
       }}
     >
-      <Text
-        style={{
-          fontSize: 15,
-          fontWeight: "500",
-          color: destructive ? "#ef4444" : "#ffffff",
-        }}
-      >
+      <Text style={{ fontSize: 15, fontWeight: "500", color: destructive ? "#ef4444" : "#ffffff" }}>
         {label}
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        {value && (
-          <Text style={{ color: "#525252", fontSize: 14 }}>{value}</Text>
-        )}
-        {onPress && showChevron && (
-          <Ionicons name="chevron-forward" size={16} color="#525252" />
-        )}
+        {loading && <ActivityIndicator size="small" color="#525252" />}
+        {value && !loading && <Text style={{ color: "#525252", fontSize: 14 }}>{value}</Text>}
+        {onPress && showChevron && !loading && <Ionicons name="chevron-forward" size={16} color="#525252" />}
       </View>
     </TouchableOpacity>
   );
 }
 
-// ─── screen ─────────────────────────────────────────────────────────────────
+async function deleteAllWorkspaceData(workspaceId: string, userId: string) {
+  // 1. Budget link transactions (deepest leaf — references budget_items)
+  const { data: budgets } = await supabase
+    .from("budgets")
+    .select("id")
+    .eq("workspace_id", workspaceId);
+
+  if (budgets?.length) {
+    const budgetIds = budgets.map((b) => b.id);
+
+    const { data: budgetItems } = await supabase
+      .from("budget_items")
+      .select("id")
+      .in("budget_id", budgetIds);
+
+    if (budgetItems?.length) {
+      const itemIds = budgetItems.map((i) => i.id);
+      const { error } = await supabase
+        .from("budget_item_transactions")
+        .delete()
+        .in("budget_item_id", itemIds);
+      if (error) throw error;
+
+      const { error: e2 } = await supabase
+        .from("budget_items")
+        .delete()
+        .in("budget_id", budgetIds);
+      if (e2) throw e2;
+    }
+
+    const { error: e3 } = await supabase
+      .from("budgets")
+      .delete()
+      .in("id", budgetIds);
+    if (e3) throw e3;
+  }
+
+  // 2. Transactions
+  const { error: eTx } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("workspace_id", workspaceId);
+  if (eTx) throw eTx;
+
+  // 3. Accounts
+  const { error: eAcc } = await supabase
+    .from("accounts")
+    .delete()
+    .eq("workspace_id", workspaceId);
+  if (eAcc) throw eAcc;
+
+  // 4. Subcategories → Categories
+  const { data: cats } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("workspace_id", workspaceId);
+
+  if (cats?.length) {
+    const catIds = cats.map((c) => c.id);
+    const { error: eSub } = await supabase
+      .from("subcategories")
+      .delete()
+      .in("category_id", catIds);
+    if (eSub) throw eSub;
+  }
+
+  const { error: eCat } = await supabase
+    .from("categories")
+    .delete()
+    .eq("workspace_id", workspaceId);
+  if (eCat) throw eCat;
+
+  // 5. Workspace membership
+  const { error: eMem } = await supabase
+    .from("workspace_members")
+    .delete()
+    .eq("user_id", userId);
+  if (eMem) throw eMem;
+}
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { session } = useAuth();
+  const { workspaceId } = useWorkspace();
+  const { t } = useTranslation();
+  const [deleting, setDeleting] = useState(false);
 
   const email = session?.user?.email ?? "—";
 
   const handleSignOut = () => {
-    Alert.alert("Sign out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign out",
-        style: "destructive",
-        onPress: () => supabase.auth.signOut(),
-      },
-    ]);
+    Alert.alert(
+      t("settings.signOutConfirm.title"),
+      t("settings.signOutConfirm.message"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("settings.signOut"), style: "destructive", onPress: () => supabase.auth.signOut() },
+      ]
+    );
+  };
+
+  const performDeletion = async () => {
+    if (!session) return;
+    setDeleting(true);
+    try {
+      if (workspaceId) {
+        await deleteAllWorkspaceData(workspaceId, session.user.id);
+      }
+      // Sign out — auth shell is removed on next server-side cleanup.
+      // Full auth.users deletion requires a server-side function.
+      await supabase.auth.signOut();
+    } catch {
+      setDeleting(false);
+      Alert.alert(
+        t("settings.deleteAccount.errorTitle"),
+        t("settings.deleteAccount.errorMessage")
+      );
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t("settings.deleteAccount.alertTitle"),
+      t("settings.deleteAccount.alertMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
+          style: "destructive",
+          onPress: () =>
+            Alert.alert(
+              t("settings.deleteAccount.confirmTitle"),
+              t("settings.deleteAccount.confirmMessage"),
+              [
+                { text: t("common.cancel"), style: "cancel" },
+                {
+                  text: t("settings.deleteAccount.confirm"),
+                  style: "destructive",
+                  onPress: performDeletion,
+                },
+              ]
+            ),
+        },
+      ]
+    );
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
-      {/* Header */}
       <View
         style={{
           paddingTop: insets.top + 12,
@@ -112,37 +233,38 @@ export default function SettingsScreen() {
           <Ionicons name="chevron-back" size={24} color="#ffffff" />
         </TouchableOpacity>
         <Text style={{ color: "#ffffff", fontSize: 20, fontWeight: "700" }}>
-          Settings
+          {t("settings.title")}
         </Text>
       </View>
 
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 32,
-        }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account */}
-        <SectionHeader label="Account" />
+        <SectionHeader label={t("settings.account")} />
         <View style={{ borderRadius: 12, overflow: "hidden" }}>
           <SettingsRow label="Email" value={email} showChevron={false} />
         </View>
 
-        {/* App */}
-        <SectionHeader label="App" />
+        <SectionHeader label={t("settings.appVersion")} />
         <View style={{ borderRadius: 12, overflow: "hidden" }}>
-          <SettingsRow label="Version" value="1.0.0" showChevron={false} />
+          <SettingsRow label={t("settings.appVersion")} value="1.0.0" showChevron={false} />
         </View>
 
-        {/* Danger zone */}
-        <SectionHeader label="Account Actions" />
-        <View style={{ borderRadius: 12, overflow: "hidden" }}>
+        <SectionHeader label={t("settings.account")} />
+        <View style={{ borderRadius: 12, overflow: "hidden", gap: 2 }}>
           <SettingsRow
-            label="Sign out"
+            label={t("settings.signOut")}
             destructive
             showChevron={false}
             onPress={handleSignOut}
+          />
+          <SettingsRow
+            label={deleting ? t("settings.deleteAccount.deleting") : t("settings.deleteAccount.label")}
+            destructive
+            showChevron={false}
+            loading={deleting}
+            onPress={handleDeleteAccount}
           />
         </View>
       </ScrollView>
