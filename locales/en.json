@@ -18,6 +18,20 @@
       "hasAccount": "Already have an account?",
       "signIn": "Sign in"
     },
+    "forgotPassword": {
+      "link": "Forgot password?",
+      "title": "Reset password",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "submit": "Send reset link",
+      "sent": "Check your email for a reset link.",
+      "back": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "New password",
+      "subtitle": "Enter your new password below.",
+      "newPassword": "New password",
+      "submit": "Update password"
+    },
     "workspace": {
       "title": "Your workspace",
       "subtitle": "Create a new workspace or join an existing one with a code.",

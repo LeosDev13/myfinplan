@@ -18,6 +18,20 @@
       "hasAccount": "¿Ya tienes cuenta?",
       "signIn": "Iniciar sesión"
     },
+    "forgotPassword": {
+      "link": "¿Olvidaste tu contraseña?",
+      "title": "Restablecer contraseña",
+      "subtitle": "Introduce tu correo y te enviaremos un enlace de restablecimiento.",
+      "submit": "Enviar enlace",
+      "sent": "Revisa tu correo para el enlace de restablecimiento.",
+      "back": "Volver al inicio de sesión"
+    },
+    "resetPassword": {
+      "title": "Nueva contraseña",
+      "subtitle": "Introduce tu nueva contraseña a continuación.",
+      "newPassword": "Nueva contraseña",
+      "submit": "Actualizar contraseña"
+    },
     "workspace": {
       "title": "Tu espacio de trabajo",
       "subtitle": "Crea un nuevo espacio o únete a uno existente con un código.",

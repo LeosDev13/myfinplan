@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
@@ -10,12 +10,15 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
 const schema = z.object({
-  email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 type FormData = z.infer<typeof schema>;
 
-export default function LoginScreen() {
+export default function ResetPasswordScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
@@ -26,11 +29,12 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: FormData) => {
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-    if (error) setError(error.message);
+    const { error } = await supabase.auth.updateUser({ password: data.password });
+    if (error) {
+      setError(error.message);
+    } else {
+      router.replace("/(app)");
+    }
   };
 
   return (
@@ -43,44 +47,43 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-10">
-          <Text className="text-4xl font-bold text-foreground">myfinplan</Text>
+          <Text className="text-4xl font-bold text-foreground">{t("auth.resetPassword.title")}</Text>
           <Text className="mt-2 text-muted-foreground text-base">
-            {t("auth.login.subtitle")}
+            {t("auth.resetPassword.subtitle")}
           </Text>
         </View>
 
         <View className="gap-4">
           <Controller
             control={control}
-            name="email"
+            name="password"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label={t("auth.fields.email")}
-                placeholder="you@example.com"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
+                label={t("auth.resetPassword.newPassword")}
+                placeholder="••••••••"
+                secureTextEntry
+                autoComplete="new-password"
                 onChangeText={onChange}
                 onBlur={onBlur}
                 value={value}
-                error={errors.email?.message}
+                error={errors.password?.message}
               />
             )}
           />
 
           <Controller
             control={control}
-            name="password"
+            name="confirmPassword"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label={t("auth.fields.password")}
+                label={t("auth.fields.confirmPassword")}
                 placeholder="••••••••"
                 secureTextEntry
-                autoComplete="password"
+                autoComplete="new-password"
                 onChangeText={onChange}
                 onBlur={onBlur}
                 value={value}
-                error={errors.password?.message}
+                error={errors.confirmPassword?.message}
               />
             )}
           />
@@ -90,19 +93,8 @@ export default function LoginScreen() {
           )}
 
           <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting} className="mt-2">
-            {t("auth.login.submit")}
+            {t("auth.resetPassword.submit")}
           </Button>
-
-          <TouchableOpacity className="items-center mt-2" onPress={() => router.push("/(auth)/forgot-password")}>
-            <Text className="text-muted-foreground text-sm">{t("auth.forgotPassword.link")}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View className="mt-8 flex-row justify-center gap-1">
-          <Text className="text-muted-foreground">{t("auth.login.noAccount")}</Text>
-          <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-            <Text className="text-foreground font-semibold">{t("auth.login.signUp")}</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
