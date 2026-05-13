@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "~/lib/supabase";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -16,6 +17,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -29,7 +31,6 @@ export default function LoginScreen() {
       password: data.password,
     });
     if (error) setError(error.message);
-    // auth guard in _layout.tsx handles redirect on success
   };
 
   return (
@@ -41,22 +42,20 @@ export default function LoginScreen() {
         contentContainerClassName="flex-1 justify-center px-6 py-12"
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View className="mb-10">
           <Text className="text-4xl font-bold text-foreground">myfinplan</Text>
           <Text className="mt-2 text-muted-foreground text-base">
-            Sign in to your account
+            {t("auth.login.subtitle")}
           </Text>
         </View>
 
-        {/* Form */}
         <View className="gap-4">
           <Controller
             control={control}
             name="email"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Email"
+                label={t("auth.fields.email")}
                 placeholder="you@example.com"
                 autoCapitalize="none"
                 keyboardType="email-address"
@@ -74,7 +73,7 @@ export default function LoginScreen() {
             name="password"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Password"
+                label={t("auth.fields.password")}
                 placeholder="••••••••"
                 secureTextEntry
                 autoComplete="password"
@@ -90,20 +89,15 @@ export default function LoginScreen() {
             <Text className="text-destructive text-sm text-center">{error}</Text>
           )}
 
-          <Button
-            onPress={handleSubmit(onSubmit)}
-            loading={isSubmitting}
-            className="mt-2"
-          >
-            Sign in
+          <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting} className="mt-2">
+            {t("auth.login.submit")}
           </Button>
         </View>
 
-        {/* Footer */}
         <View className="mt-8 flex-row justify-center gap-1">
-          <Text className="text-muted-foreground">Don't have an account?</Text>
+          <Text className="text-muted-foreground">{t("auth.login.noAccount")}</Text>
           <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-            <Text className="text-foreground font-semibold">Sign up</Text>
+            <Text className="text-foreground font-semibold">{t("auth.login.signUp")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

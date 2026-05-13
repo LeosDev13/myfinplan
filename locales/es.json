@@ -1,4 +1,36 @@
 {
+  "auth": {
+    "fields": {
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña"
+    },
+    "login": {
+      "subtitle": "Inicia sesión en tu cuenta",
+      "submit": "Iniciar sesión",
+      "noAccount": "¿No tienes cuenta?",
+      "signUp": "Regístrate"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Empieza a controlar tus finanzas",
+      "submit": "Crear cuenta",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "signIn": "Iniciar sesión"
+    },
+    "workspace": {
+      "title": "Tu espacio de trabajo",
+      "subtitle": "Crea un nuevo espacio o únete a uno existente con un código.",
+      "tabCreate": "Crear nuevo",
+      "tabJoin": "Unirse",
+      "nameLabel": "Nombre del espacio",
+      "namePlaceholder": "p. ej. Leo y Sara",
+      "createSubmit": "Crear espacio",
+      "joinCodeLabel": "Código de acceso",
+      "joinSubmit": "Unirse",
+      "invalidCode": "Código inválido. Compruébalo con tu pareja."
+    }
+  },
   "date": {
     "today": "Hoy",
     "yesterday": "Ayer"

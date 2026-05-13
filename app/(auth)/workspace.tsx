@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "~/lib/supabase";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -22,6 +23,7 @@ type JoinData = z.infer<typeof joinSchema>;
 
 export default function WorkspaceScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("create");
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +32,7 @@ export default function WorkspaceScreen() {
 
   const onCreateSubmit = async (data: CreateData) => {
     setError(null);
-    const { data: result, error } = await supabase.functions.invoke("create-workspace", {
+    const { error } = await supabase.functions.invoke("create-workspace", {
       body: { workspaceName: data.workspaceName },
     });
     if (error) {
@@ -42,13 +44,13 @@ export default function WorkspaceScreen() {
 
   const onJoinSubmit = async (data: JoinData) => {
     setError(null);
-    const { data: result, error } = await supabase.functions.invoke("join-workspace", {
+    const { error } = await supabase.functions.invoke("join-workspace", {
       body: { joinCode: data.joinCode.toUpperCase() },
     });
     if (error) {
       setError(
         error.message.includes("404") || error.message.includes("Invalid")
-          ? "Invalid join code. Check with your partner."
+          ? t("auth.workspace.invalidCode")
           : error.message
       );
     } else {
@@ -70,30 +72,27 @@ export default function WorkspaceScreen() {
         contentContainerClassName="flex-1 justify-center px-6 py-12"
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View className="mb-10">
-          <Text className="text-4xl font-bold text-foreground">Your workspace</Text>
+          <Text className="text-4xl font-bold text-foreground">{t("auth.workspace.title")}</Text>
           <Text className="mt-2 text-muted-foreground text-base">
-            Create a new workspace or join an existing one with a code.
+            {t("auth.workspace.subtitle")}
           </Text>
         </View>
 
-        {/* Tab switcher */}
         <View className="flex-row rounded-lg bg-muted p-1 mb-6">
-          {(["create", "join"] as Tab[]).map((t) => (
+          {(["create", "join"] as Tab[]).map((tabKey) => (
             <TouchableOpacity
-              key={t}
-              onPress={() => { setTab(t); setError(null); }}
-              className={`flex-1 py-2 rounded-md items-center ${tab === t ? "bg-background shadow-sm" : ""}`}
+              key={tabKey}
+              onPress={() => { setTab(tabKey); setError(null); }}
+              className={`flex-1 py-2 rounded-md items-center ${tab === tabKey ? "bg-background shadow-sm" : ""}`}
             >
-              <Text className={`text-sm font-medium ${tab === t ? "text-foreground" : "text-muted-foreground"}`}>
-                {t === "create" ? "Create new" : "Join existing"}
+              <Text className={`text-sm font-medium ${tab === tabKey ? "text-foreground" : "text-muted-foreground"}`}>
+                {tabKey === "create" ? t("auth.workspace.tabCreate") : t("auth.workspace.tabJoin")}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Create form */}
         {tab === "create" && (
           <View className="gap-4">
             <Controller
@@ -101,8 +100,8 @@ export default function WorkspaceScreen() {
               name="workspaceName"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
-                  label="Workspace name"
-                  placeholder="e.g. Leo & Sara"
+                  label={t("auth.workspace.nameLabel")}
+                  placeholder={t("auth.workspace.namePlaceholder")}
                   autoCapitalize="words"
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -114,16 +113,12 @@ export default function WorkspaceScreen() {
             {error && (
               <Text className="text-destructive text-sm text-center">{error}</Text>
             )}
-            <Button
-              onPress={createForm.handleSubmit(onCreateSubmit)}
-              loading={isSubmitting}
-            >
-              Create workspace
+            <Button onPress={createForm.handleSubmit(onCreateSubmit)} loading={isSubmitting}>
+              {t("auth.workspace.createSubmit")}
             </Button>
           </View>
         )}
 
-        {/* Join form */}
         {tab === "join" && (
           <View className="gap-4">
             <Controller
@@ -131,12 +126,12 @@ export default function WorkspaceScreen() {
               name="joinCode"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
-                  label="Join code"
+                  label={t("auth.workspace.joinCodeLabel")}
                   placeholder="X7K2MQ"
                   autoCapitalize="characters"
                   autoCorrect={false}
                   maxLength={6}
-                  onChangeText={(t) => onChange(t.toUpperCase())}
+                  onChangeText={(v) => onChange(v.toUpperCase())}
                   onBlur={onBlur}
                   value={value}
                   error={joinForm.formState.errors.joinCode?.message}
@@ -147,21 +142,14 @@ export default function WorkspaceScreen() {
             {error && (
               <Text className="text-destructive text-sm text-center">{error}</Text>
             )}
-            <Button
-              onPress={joinForm.handleSubmit(onJoinSubmit)}
-              loading={isSubmitting}
-            >
-              Join workspace
+            <Button onPress={joinForm.handleSubmit(onJoinSubmit)} loading={isSubmitting}>
+              {t("auth.workspace.joinSubmit")}
             </Button>
           </View>
         )}
 
-        {/* Sign out link */}
-        <TouchableOpacity
-          className="mt-10 items-center"
-          onPress={() => supabase.auth.signOut()}
-        >
-          <Text className="text-muted-foreground text-sm">Sign out</Text>
+        <TouchableOpacity className="mt-10 items-center" onPress={() => supabase.auth.signOut()}>
+          <Text className="text-muted-foreground text-sm">{t("settings.signOut")}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

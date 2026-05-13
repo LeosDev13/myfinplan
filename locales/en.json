@@ -1,4 +1,36 @@
 {
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
+    "login": {
+      "subtitle": "Sign in to your account",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Start tracking your finances",
+      "submit": "Create account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "workspace": {
+      "title": "Your workspace",
+      "subtitle": "Create a new workspace or join an existing one with a code.",
+      "tabCreate": "Create new",
+      "tabJoin": "Join existing",
+      "nameLabel": "Workspace name",
+      "namePlaceholder": "e.g. Leo & Sara",
+      "createSubmit": "Create workspace",
+      "joinCodeLabel": "Join code",
+      "joinSubmit": "Join workspace",
+      "invalidCode": "Invalid join code. Check with your partner."
+    }
+  },
   "date": {
     "today": "Today",
     "yesterday": "Yesterday"

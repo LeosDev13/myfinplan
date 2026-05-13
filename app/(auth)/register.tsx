@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "~/lib/supabase";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -20,6 +21,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -35,7 +37,6 @@ export default function RegisterScreen() {
     if (error) {
       setError(error.message);
     } else {
-      // Redirect to workspace setup after signup
       router.replace("/(auth)/workspace");
     }
   };
@@ -49,22 +50,20 @@ export default function RegisterScreen() {
         contentContainerClassName="flex-1 justify-center px-6 py-12"
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View className="mb-10">
-          <Text className="text-4xl font-bold text-foreground">Create account</Text>
+          <Text className="text-4xl font-bold text-foreground">{t("auth.register.title")}</Text>
           <Text className="mt-2 text-muted-foreground text-base">
-            Start tracking your finances
+            {t("auth.register.subtitle")}
           </Text>
         </View>
 
-        {/* Form */}
         <View className="gap-4">
           <Controller
             control={control}
             name="email"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Email"
+                label={t("auth.fields.email")}
                 placeholder="you@example.com"
                 autoCapitalize="none"
                 keyboardType="email-address"
@@ -82,7 +81,7 @@ export default function RegisterScreen() {
             name="password"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Password"
+                label={t("auth.fields.password")}
                 placeholder="••••••••"
                 secureTextEntry
                 autoComplete="new-password"
@@ -99,7 +98,7 @@ export default function RegisterScreen() {
             name="confirmPassword"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Confirm password"
+                label={t("auth.fields.confirmPassword")}
                 placeholder="••••••••"
                 secureTextEntry
                 autoComplete="new-password"
@@ -115,20 +114,15 @@ export default function RegisterScreen() {
             <Text className="text-destructive text-sm text-center">{error}</Text>
           )}
 
-          <Button
-            onPress={handleSubmit(onSubmit)}
-            loading={isSubmitting}
-            className="mt-2"
-          >
-            Create account
+          <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting} className="mt-2">
+            {t("auth.register.submit")}
           </Button>
         </View>
 
-        {/* Footer */}
         <View className="mt-8 flex-row justify-center gap-1">
-          <Text className="text-muted-foreground">Already have an account?</Text>
+          <Text className="text-muted-foreground">{t("auth.register.hasAccount")}</Text>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text className="text-foreground font-semibold">Sign in</Text>
+            <Text className="text-foreground font-semibold">{t("auth.register.signIn")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
