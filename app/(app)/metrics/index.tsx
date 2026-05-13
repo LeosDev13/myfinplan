@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
+import { useAccounts } from "~/lib/database/accounts";
 import {
   useMetricsSummary,
   useCategoryBreakdown,
@@ -52,10 +53,10 @@ function getPeriodRange(period: Period): {
   }
 }
 
-function formatMoney(cents: number): string {
+function formatMoney(currency: string, cents: number): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
-    currency: "EUR",
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(cents / 100);
@@ -85,6 +86,9 @@ export default function MetricsScreen() {
   const trendTo = useMemo(() => new Date().toISOString(), []);
 
   const ws = workspaceId ?? "";
+  const { data: accounts } = useAccounts();
+  const currency = accounts[0]?.currency ?? "EUR";
+
   const { data: summary,    isLoading: summaryLoading }    = useMetricsSummary(ws, from, to);
   const { data: categories, isLoading: categoriesLoading } = useCategoryBreakdown(ws, from, to);
   const { data: trendData,  isLoading: trendLoading }      = useMonthlyTrend(ws, trendFrom, trendTo);
@@ -198,7 +202,7 @@ export default function MetricsScreen() {
                 {label}
               </Text>
               <Text style={{ color, fontSize: 18, fontWeight: "800" }}>
-                {formatMoney(value)}
+                {formatMoney(currency,value)}
               </Text>
             </View>
           ))}
@@ -266,7 +270,7 @@ export default function MetricsScreen() {
                             fontWeight: "700",
                           }}
                         >
-                          {formatMoney(cat.total_cents)}
+                          {formatMoney(currency,cat.total_cents)}
                         </Text>
                         <Text style={{ color: "#525252", fontSize: 12 }}>
                           {isExpanded ? "↑" : "›"}
@@ -303,7 +307,7 @@ export default function MetricsScreen() {
                         >
                           <Text style={{ color: "#888888", fontSize: 12 }}>{sub.name}</Text>
                           <Text style={{ color: "#888888", fontSize: 12, fontWeight: "600" }}>
-                            {formatMoney(sub.total_cents)}
+                            {formatMoney(currency,sub.total_cents)}
                           </Text>
                         </View>
                       ))}

@@ -86,6 +86,7 @@ export default function DashboardScreen() {
   );
 
   const savedCents = (summary?.income_cents ?? 0) - (summary?.expense_cents ?? 0);
+  const currency = accounts[0]?.currency ?? "EUR";
   const recentTransactions = transactions.slice(0, 5);
 
   if (accountsLoading) {
@@ -182,7 +183,7 @@ export default function DashboardScreen() {
               marginTop: 6,
             }}
           >
-            {formatMoney(netWorthCents)}
+            {formatMoney(netWorthCents, currency)}
           </Text>
           <Text style={{ color: "#525252", fontSize: 12, marginTop: 4 }}>
             Across {accounts.length} {accounts.length !== 1 ? t("dashboard.accounts_plural") : t("dashboard.accounts")}
@@ -209,7 +210,7 @@ export default function DashboardScreen() {
                 {label}
               </Text>
               <Text style={{ color, fontSize: 15, fontWeight: "800" }}>
-                {formatMoney(value)}
+                {formatMoney(value, currency)}
               </Text>
             </View>
           ))}
