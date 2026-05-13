@@ -2,26 +2,25 @@ import { View, Text, TouchableOpacity, SectionList, ActivityIndicator } from "re
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useTransactions } from "~/lib/database/transactions";
 import { TransactionRow } from "./TransactionRow";
 import type { Transaction } from "~/lib/types";
 
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-function dateTitle(isoString: string): string {
+function dateTitle(isoString: string, t: (k: string) => string): string {
   const date = new Date(isoString);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
 
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  if (date.toDateString() === today.toDateString()) return t("date.today");
+  if (date.toDateString() === yesterday.toDateString()) return t("date.yesterday");
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
 type Section = { title: string; data: Transaction[] };
 
-function groupByDate(transactions: Transaction[]): Section[] {
+function groupByDate(transactions: Transaction[], t: (k: string) => string): Section[] {
   const map = new Map<string, Transaction[]>();
   for (const tx of transactions) {
     const key = new Date(tx.datetime).toDateString();
@@ -29,22 +28,20 @@ function groupByDate(transactions: Transaction[]): Section[] {
     map.get(key)!.push(tx);
   }
   return Array.from(map.entries()).map(([, txs]) => ({
-    title: dateTitle(txs[0].datetime),
+    title: dateTitle(txs[0].datetime, t),
     data: txs,
   }));
 }
 
-// ─── screen ─────────────────────────────────────────────────────────────────
-
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { data: transactions, isLoading } = useTransactions();
-  const sections = groupByDate(transactions);
+  const sections = groupByDate(transactions, t);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
-      {/* Header */}
       <View
         style={{
           paddingTop: insets.top + 12,
@@ -56,22 +53,25 @@ export default function ActivityScreen() {
         }}
       >
         <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
-          Activity
+          {t("transactions.title")}
         </Text>
         <TouchableOpacity onPress={() => router.push("/(app)/transactions/add")} hitSlop={8}>
           <Ionicons name="add" size={26} color="#10b981" />
         </TouchableOpacity>
       </View>
 
-      {/* List */}
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color="#10b981" />
         </View>
       ) : sections.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600" }}>No transactions yet</Text>
-          <Text style={{ color: "#525252", fontSize: 13 }}>Tap + to add your first one</Text>
+          <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600" }}>
+            {t("transactions.noTransactions")}
+          </Text>
+          <Text style={{ color: "#525252", fontSize: 13 }}>
+            {t("transactions.noTransactionsHint")}
+          </Text>
         </View>
       ) : (
         <SectionList
@@ -102,7 +102,6 @@ export default function ActivityScreen() {
           stickySectionHeadersEnabled={false}
         />
       )}
-
     </View>
   );
 }

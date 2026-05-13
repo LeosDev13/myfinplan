@@ -196,6 +196,8 @@
   },
   "more": {
     "title": "More",
+    "sectionManage": "Manage",
+    "sectionApp": "App",
     "accounts": "Accounts",
     "categories": "Categories",
     "settings": "Settings"
@@ -203,6 +205,9 @@
   "settings": {
     "title": "Settings",
     "account": "Account",
+    "preferences": "Preferences",
+    "danger": "Danger zone",
+    "language": "Language",
     "appVersion": "App version",
     "signOut": "Sign out",
     "signOutConfirm": {

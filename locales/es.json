@@ -196,6 +196,8 @@
   },
   "more": {
     "title": "Más",
+    "sectionManage": "Gestionar",
+    "sectionApp": "Aplicación",
     "accounts": "Cuentas",
     "categories": "Categorías",
     "settings": "Ajustes"
@@ -203,6 +205,9 @@
   "settings": {
     "title": "Ajustes",
     "account": "Cuenta",
+    "preferences": "Preferencias",
+    "danger": "Zona de peligro",
+    "language": "Idioma",
     "appVersion": "Versión de la app",
     "signOut": "Cerrar sesión",
     "signOutConfirm": {

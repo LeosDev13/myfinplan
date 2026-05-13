@@ -13,7 +13,7 @@ const TABS: {
   { name: "transactions",       label: "Activity", icon: "swap-vertical-outline", iconActive: "swap-vertical" },
   { name: "budgets/index",      label: "Budgets",  icon: "wallet-outline",        iconActive: "wallet" },
   { name: "metrics/index",      label: "Metrics",  icon: "bar-chart-outline",     iconActive: "bar-chart" },
-  { name: "more",               label: "Accounts", icon: "card-outline",          iconActive: "card" },
+  { name: "more",               label: "More",     icon: "ellipsis-horizontal-outline", iconActive: "ellipsis-horizontal" },
 ];
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, FlatList, ActivityIndicator }
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import { useAccounts } from "~/lib/database/accounts";
 import { useTransactions } from "~/lib/database/transactions";
@@ -13,11 +14,11 @@ import type { AccountWithBalance } from "~/lib/types";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function greeting(): string {
+function greeting(t: (key: string) => string): string {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return t("greeting.morning");
+  if (h < 18) return t("greeting.afternoon");
+  return t("greeting.evening");
 }
 
 function currentMonthLabel(): string {
@@ -65,6 +66,7 @@ function AccountCard({ account }: { account: AccountWithBalance }) {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { workspaceId } = useWorkspace();
 
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -98,9 +100,9 @@ export default function DashboardScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
         <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
-          <Text style={{ color: "#525252", fontSize: 13 }}>{greeting()}</Text>
+          <Text style={{ color: "#525252", fontSize: 13 }}>{greeting(t)}</Text>
           <Text style={{ color: "#ffffff", fontSize: 26, fontWeight: "800", letterSpacing: -0.5, marginTop: 2 }}>
-            Welcome
+            {t("onboarding.greeting")}
           </Text>
         </View>
 
@@ -108,9 +110,9 @@ export default function DashboardScreen() {
           {/* Steps */}
           <View style={{ gap: 16 }}>
             {[
-              { step: "1", title: "Add an account", desc: "Add your bank account, credit card, or cash wallet." },
-              { step: "2", title: "Log transactions", desc: "Record income and expenses — we'll set up common categories for you." },
-              { step: "3", title: "Track your finances", desc: "See your net worth, spending trends, and stay on budget." },
+              { step: "1", title: t("onboarding.step1Title"), desc: t("onboarding.step1Desc") },
+              { step: "2", title: t("onboarding.step2Title"), desc: t("onboarding.step2Desc") },
+              { step: "3", title: t("onboarding.step3Title"), desc: t("onboarding.step3Desc") },
             ].map(({ step, title, desc }) => (
               <View key={step} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
                 <View style={{
@@ -144,7 +146,7 @@ export default function DashboardScreen() {
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>Get started</Text>
+            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}>{t("onboarding.cta")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -159,9 +161,9 @@ export default function DashboardScreen() {
     >
       {/* ── Header ── */}
       <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
-        <Text style={{ color: "#525252", fontSize: 13 }}>{greeting()}</Text>
+        <Text style={{ color: "#525252", fontSize: 13 }}>{greeting(t)}</Text>
         <Text style={{ color: "#ffffff", fontSize: 26, fontWeight: "800", letterSpacing: -0.5, marginTop: 2 }}>
-          Dashboard
+          {t("dashboard.title")}
         </Text>
       </View>
 
@@ -169,7 +171,7 @@ export default function DashboardScreen() {
       <View style={{ paddingHorizontal: 16, marginTop: 12 }}>
         <View style={{ backgroundColor: "#141414", borderRadius: 20, padding: 20 }}>
           <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-            Net Worth
+            {t("dashboard.netWorth")}
           </Text>
           <Text
             style={{
@@ -183,7 +185,7 @@ export default function DashboardScreen() {
             {formatMoney(netWorthCents)}
           </Text>
           <Text style={{ color: "#525252", fontSize: 12, marginTop: 4 }}>
-            Across {accounts.length} account{accounts.length !== 1 ? "s" : ""}
+            Across {accounts.length} {accounts.length !== 1 ? t("dashboard.accounts_plural") : t("dashboard.accounts")}
           </Text>
         </View>
       </View>
@@ -195,9 +197,9 @@ export default function DashboardScreen() {
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           {[
-            { label: "Income", value: summary?.income_cents ?? 0, color: "#10b981" },
-            { label: "Spent",  value: summary?.expense_cents ?? 0, color: "#ef4444" },
-            { label: "Saved",  value: savedCents, color: savedCents >= 0 ? "#10b981" : "#ef4444" },
+            { label: t("metrics.summary.income"), value: summary?.income_cents ?? 0, color: "#10b981" },
+            { label: t("metrics.summary.spent"),  value: summary?.expense_cents ?? 0, color: "#ef4444" },
+            { label: t("metrics.summary.saved"),  value: savedCents, color: savedCents >= 0 ? "#10b981" : "#ef4444" },
           ].map(({ label, value, color }) => (
             <View
               key={label}
@@ -219,10 +221,10 @@ export default function DashboardScreen() {
         <View style={{ marginTop: 20 }}>
           <View style={{ paddingHorizontal: 16, marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-              Accounts
+              {t("accounts.title")}
             </Text>
             <TouchableOpacity onPress={() => router.push("/(app)/more/accounts")}>
-              <Text style={{ color: "#10b981", fontSize: 12, fontWeight: "600" }}>See all</Text>
+              <Text style={{ color: "#10b981", fontSize: 12, fontWeight: "600" }}>{t("common.seeAll")}</Text>
             </TouchableOpacity>
           </View>
           <FlatList
@@ -240,17 +242,17 @@ export default function DashboardScreen() {
       <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-            Recent Activity
+            {t("dashboard.recentActivity")}
           </Text>
           <TouchableOpacity onPress={() => router.push("/(app)/transactions")}>
-            <Text style={{ color: "#10b981", fontSize: 12, fontWeight: "600" }}>See all</Text>
+            <Text style={{ color: "#10b981", fontSize: 12, fontWeight: "600" }}>{t("common.seeAll")}</Text>
           </TouchableOpacity>
         </View>
 
         {recentTransactions.length === 0 ? (
           <View style={{ backgroundColor: "#141414", borderRadius: 16, padding: 24, alignItems: "center", gap: 6 }}>
-            <Text style={{ color: "#525252", fontSize: 14, fontWeight: "600" }}>No transactions yet</Text>
-            <Text style={{ color: "#525252", fontSize: 12 }}>Tap + to add your first one</Text>
+            <Text style={{ color: "#525252", fontSize: 14, fontWeight: "600" }}>{t("dashboard.noTransactions")}</Text>
+            <Text style={{ color: "#525252", fontSize: 12 }}>{t("dashboard.noTransactionsHint")}</Text>
           </View>
         ) : (
           <View style={{ borderRadius: 12, overflow: "hidden" }}>
@@ -281,7 +283,7 @@ export default function DashboardScreen() {
           }}
         >
           <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
-          <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "700" }}>Add Transaction</Text>
+          <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "700" }}>{t("dashboard.addTransaction")}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

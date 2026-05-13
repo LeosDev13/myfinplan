@@ -1,7 +1,9 @@
 import "../global.css";
+import "~/lib/i18n";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useEffect, useRef } from "react";
+import { loadStoredLanguage } from "~/lib/i18n";
 import { PowerSyncContext } from "@powersync/react-native";
 import { db, connector } from "~/lib/powersync";
 import { useAuth } from "~/hooks/useAuth";
@@ -55,6 +57,10 @@ function AuthGuard() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    loadStoredLanguage();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PowerSyncContext.Provider value={db}>

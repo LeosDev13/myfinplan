@@ -7,6 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Select } from "~/components/ui/select";
@@ -41,6 +42,7 @@ const TYPE_CONFIG: Record<TransactionType, { bg: string; border: string; color: 
 export default function AddTransactionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [type, setType] = useState<TransactionType>("expense");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -84,13 +86,13 @@ export default function AddTransactionScreen() {
 
   const onSubmit = async (data: FormData) => {
     if (!workspaceId) {
-      Alert.alert("Not ready", "Workspace not loaded yet. Please wait a moment and try again.");
+      Alert.alert(t("common.error"), t("transactions.notReady"));
       return;
     }
     try {
       const amountCents = Math.round(parseFloat(data.amount) * 100);
       const tagsArray = data.tags
-        ? data.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        ? data.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
         : [];
 
       await create(workspaceId, {
@@ -109,7 +111,7 @@ export default function AddTransactionScreen() {
 
       router.back();
     } catch (e: unknown) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Could not save transaction. Please try again.");
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("transactions.notReady"));
     }
   };
 
@@ -135,7 +137,7 @@ export default function AddTransactionScreen() {
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
         <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-          Add transaction
+          {t("transactions.add")}
         </Text>
       </View>
 
@@ -149,13 +151,13 @@ export default function AddTransactionScreen() {
       >
         {/* Type toggle */}
         <View style={{ flexDirection: "row", gap: 8 }}>
-          {(["expense", "income", "transfer"] as TransactionType[]).map((t) => {
-            const isActive = type === t;
-            const cfg = TYPE_CONFIG[t];
+          {(["expense", "income", "transfer"] as TransactionType[]).map((txType) => {
+            const isActive = type === txType;
+            const cfg = TYPE_CONFIG[txType];
             return (
               <TouchableOpacity
-                key={t}
-                onPress={() => setType(t)}
+                key={txType}
+                onPress={() => setType(txType)}
                 style={{
                   flex: 1,
                   paddingVertical: 8,
@@ -174,7 +176,7 @@ export default function AddTransactionScreen() {
                     textTransform: "capitalize",
                   }}
                 >
-                  {t}
+                  {t(`transactions.type.${txType}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -187,7 +189,7 @@ export default function AddTransactionScreen() {
           style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 }}
         >
           <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-            Date
+            {t("transactions.fields.date")}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>{dateLabel}</Text>
@@ -213,7 +215,7 @@ export default function AddTransactionScreen() {
           name="amount"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Amount"
+              label={t("transactions.fields.amount")}
               placeholder="0.00"
               keyboardType="decimal-pad"
               onChangeText={onChange}
@@ -230,7 +232,7 @@ export default function AddTransactionScreen() {
           name="account_id"
           render={({ field: { onChange, value } }) => (
             <Select
-              label="Account"
+              label={t("transactions.fields.account")}
               options={accountOptions}
               value={value}
               onChange={onChange}
@@ -245,7 +247,7 @@ export default function AddTransactionScreen() {
           name="category"
           render={({ field: { onChange, value } }) => (
             <Select
-              label="Category"
+              label={t("transactions.fields.category")}
               options={categoryOptions}
               value={value}
               onChange={(v) => {
@@ -264,7 +266,7 @@ export default function AddTransactionScreen() {
             name="subcategory"
             render={({ field: { onChange, value } }) => (
               <Select
-                label="Subcategory"
+                label={t("transactions.fields.subcategory")}
                 options={subcategoryOptions}
                 value={value ?? ""}
                 onChange={onChange}
@@ -279,8 +281,8 @@ export default function AddTransactionScreen() {
           name="merchant"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Merchant"
-              placeholder="Who did you pay?"
+              label={t("transactions.fields.merchant")}
+              placeholder={t("transactions.fields.merchantPlaceholder")}
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
@@ -294,8 +296,8 @@ export default function AddTransactionScreen() {
           name="note"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Note"
-              placeholder="Optional memo"
+              label={t("transactions.fields.note")}
+              placeholder={t("transactions.fields.notePlaceholder")}
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
@@ -309,8 +311,8 @@ export default function AddTransactionScreen() {
           name="tags"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Tags"
-              placeholder="groceries, weekend (comma-separated)"
+              label={t("transactions.fields.tags")}
+              placeholder={t("transactions.fields.tagsPlaceholder")}
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
@@ -335,10 +337,10 @@ export default function AddTransactionScreen() {
             >
               <View>
                 <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-                  Reimbursed
+                  {t("transactions.fields.reimbursed")}
                 </Text>
                 <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
-                  Mark as to be paid back
+                  {t("transactions.fields.reimbursedDesc")}
                 </Text>
               </View>
               <Switch
@@ -353,7 +355,7 @@ export default function AddTransactionScreen() {
 
         {/* Save */}
         <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-          Save transaction
+          {t("transactions.save")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

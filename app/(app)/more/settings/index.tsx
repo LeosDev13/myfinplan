@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator, ActionSheetIOS, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "~/lib/supabase";
 import { useAuth } from "~/hooks/useAuth";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
+import { setLanguage, SUPPORTED_LANGUAGES } from "~/lib/i18n";
 
 function SectionHeader({ label }: { label: string }) {
   return (
@@ -71,7 +72,6 @@ function SettingsRow({
 }
 
 async function deleteAllWorkspaceData(workspaceId: string, userId: string) {
-  // 1. Budget link transactions (deepest leaf — references budget_items)
   const { data: budgets } = await supabase
     .from("budgets")
     .select("id")
@@ -79,7 +79,6 @@ async function deleteAllWorkspaceData(workspaceId: string, userId: string) {
 
   if (budgets?.length) {
     const budgetIds = budgets.map((b) => b.id);
-
     const { data: budgetItems } = await supabase
       .from("budget_items")
       .select("id")
@@ -87,66 +86,29 @@ async function deleteAllWorkspaceData(workspaceId: string, userId: string) {
 
     if (budgetItems?.length) {
       const itemIds = budgetItems.map((i) => i.id);
-      const { error } = await supabase
-        .from("budget_item_transactions")
-        .delete()
-        .in("budget_item_id", itemIds);
-      if (error) throw error;
-
-      const { error: e2 } = await supabase
-        .from("budget_items")
-        .delete()
-        .in("budget_id", budgetIds);
+      const { error: e1 } = await supabase.from("budget_item_transactions").delete().in("budget_item_id", itemIds);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase.from("budget_items").delete().in("budget_id", budgetIds);
       if (e2) throw e2;
     }
-
-    const { error: e3 } = await supabase
-      .from("budgets")
-      .delete()
-      .in("id", budgetIds);
+    const { error: e3 } = await supabase.from("budgets").delete().in("id", budgetIds);
     if (e3) throw e3;
   }
 
-  // 2. Transactions
-  const { error: eTx } = await supabase
-    .from("transactions")
-    .delete()
-    .eq("workspace_id", workspaceId);
+  const { error: eTx }  = await supabase.from("transactions").delete().eq("workspace_id", workspaceId);
   if (eTx) throw eTx;
-
-  // 3. Accounts
-  const { error: eAcc } = await supabase
-    .from("accounts")
-    .delete()
-    .eq("workspace_id", workspaceId);
+  const { error: eAcc } = await supabase.from("accounts").delete().eq("workspace_id", workspaceId);
   if (eAcc) throw eAcc;
 
-  // 4. Subcategories → Categories
-  const { data: cats } = await supabase
-    .from("categories")
-    .select("id")
-    .eq("workspace_id", workspaceId);
-
+  const { data: cats } = await supabase.from("categories").select("id").eq("workspace_id", workspaceId);
   if (cats?.length) {
-    const catIds = cats.map((c) => c.id);
-    const { error: eSub } = await supabase
-      .from("subcategories")
-      .delete()
-      .in("category_id", catIds);
+    const { error: eSub } = await supabase.from("subcategories").delete().in("category_id", cats.map((c) => c.id));
     if (eSub) throw eSub;
   }
-
-  const { error: eCat } = await supabase
-    .from("categories")
-    .delete()
-    .eq("workspace_id", workspaceId);
+  const { error: eCat } = await supabase.from("categories").delete().eq("workspace_id", workspaceId);
   if (eCat) throw eCat;
 
-  // 5. Workspace membership
-  const { error: eMem } = await supabase
-    .from("workspace_members")
-    .delete()
-    .eq("user_id", userId);
+  const { error: eMem } = await supabase.from("workspace_members").delete().eq("user_id", userId);
   if (eMem) throw eMem;
 }
 
@@ -155,10 +117,47 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { session } = useAuth();
   const { workspaceId } = useWorkspace();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [deleting, setDeleting] = useState(false);
 
   const email = session?.user?.email ?? "—";
+
+  const currentLangLabel =
+    SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language)?.label ??
+    SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language.split("-")[0])?.label ??
+    "English";
+
+  const handleLanguage = () => {
+    const options = SUPPORTED_LANGUAGES.map((l) => l.label);
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...options, t("common.cancel")],
+          cancelButtonIndex: options.length,
+          title: t("settings.language"),
+          userInterfaceStyle: "dark",
+        },
+        (index) => {
+          if (index < options.length) {
+            setLanguage(SUPPORTED_LANGUAGES[index].code);
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        t("settings.language"),
+        undefined,
+        [
+          ...SUPPORTED_LANGUAGES.map((l) => ({
+            text: l.label,
+            onPress: () => setLanguage(l.code),
+          })),
+          { text: t("common.cancel"), style: "cancel" as const },
+        ]
+      );
+    }
+  };
 
   const handleSignOut = () => {
     Alert.alert(
@@ -178,15 +177,10 @@ export default function SettingsScreen() {
       if (workspaceId) {
         await deleteAllWorkspaceData(workspaceId, session.user.id);
       }
-      // Sign out — auth shell is removed on next server-side cleanup.
-      // Full auth.users deletion requires a server-side function.
       await supabase.auth.signOut();
     } catch {
       setDeleting(false);
-      Alert.alert(
-        t("settings.deleteAccount.errorTitle"),
-        t("settings.deleteAccount.errorMessage")
-      );
+      Alert.alert(t("settings.deleteAccount.errorTitle"), t("settings.deleteAccount.errorMessage"));
     }
   };
 
@@ -205,11 +199,7 @@ export default function SettingsScreen() {
               t("settings.deleteAccount.confirmMessage"),
               [
                 { text: t("common.cancel"), style: "cancel" },
-                {
-                  text: t("settings.deleteAccount.confirm"),
-                  style: "destructive",
-                  onPress: performDeletion,
-                },
+                { text: t("settings.deleteAccount.confirm"), style: "destructive", onPress: performDeletion },
               ]
             ),
         },
@@ -246,12 +236,21 @@ export default function SettingsScreen() {
           <SettingsRow label="Email" value={email} showChevron={false} />
         </View>
 
-        <SectionHeader label={t("settings.appVersion")} />
+        <SectionHeader label={t("settings.preferences")} />
         <View style={{ borderRadius: 12, overflow: "hidden" }}>
-          <SettingsRow label={t("settings.appVersion")} value="1.0.0" showChevron={false} />
+          <SettingsRow
+            label={t("settings.language")}
+            value={currentLangLabel}
+            onPress={handleLanguage}
+          />
+          <SettingsRow
+            label={t("settings.appVersion")}
+            value="1.0.0"
+            showChevron={false}
+          />
         </View>
 
-        <SectionHeader label={t("settings.account")} />
+        <SectionHeader label={t("settings.danger")} />
         <View style={{ borderRadius: 12, overflow: "hidden", gap: 2 }}>
           <SettingsRow
             label={t("settings.signOut")}
