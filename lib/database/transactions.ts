@@ -2,9 +2,12 @@ import { useQuery, usePowerSync } from "@powersync/react-native";
 import { generateId } from "~/lib/uuid";
 import { Transaction } from "../types";
 
-export function useTransactions() {
+export function useTransactions(limit?: number) {
   return useQuery<Transaction>(
-    `SELECT * FROM transactions ORDER BY datetime DESC`
+    limit != null
+      ? `SELECT * FROM transactions ORDER BY datetime DESC LIMIT ?`
+      : `SELECT * FROM transactions ORDER BY datetime DESC`,
+    limit != null ? [limit] : []
   );
 }
 

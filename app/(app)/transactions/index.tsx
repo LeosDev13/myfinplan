@@ -3,9 +3,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { useState, useCallback } from "react";
 import { useTransactions } from "~/lib/database/transactions";
 import { TransactionRow } from "./TransactionRow";
 import type { Transaction } from "~/lib/types";
+
+const PAGE_SIZE = 50;
 
 function dateTitle(isoString: string, t: (k: string) => string): string {
   const date = new Date(isoString);
@@ -37,8 +40,14 @@ export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
-  const { data: transactions, isLoading } = useTransactions();
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const { data: transactions, isLoading } = useTransactions(limit);
   const sections = groupByDate(transactions, t);
+  const hasMore = transactions.length === limit;
+
+  const loadMore = useCallback(() => {
+    if (hasMore) setLimit((l) => l + PAGE_SIZE);
+  }, [hasMore]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
@@ -100,6 +109,15 @@ export default function ActivityScreen() {
             </TouchableOpacity>
           )}
           stickySectionHeadersEnabled={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            hasMore ? (
+              <View style={{ paddingVertical: 16, alignItems: "center" }}>
+                <ActivityIndicator color="#525252" size="small" />
+              </View>
+            ) : null
+          }
         />
       )}
     </View>

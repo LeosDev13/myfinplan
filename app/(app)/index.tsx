@@ -72,7 +72,7 @@ export default function DashboardScreen() {
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const { data: categories } = useCategoriesWithSubs();
   const { seedDefaults } = useCategorySeed();
-  const { data: transactions } = useTransactions();
+  const { data: transactions } = useTransactions(5);
 
   const now = useMemo(() => new Date(), []);
   const monthFrom = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), [now]);
@@ -87,7 +87,7 @@ export default function DashboardScreen() {
 
   const savedCents = (summary?.income_cents ?? 0) - (summary?.expense_cents ?? 0);
   const currency = accounts[0]?.currency ?? "EUR";
-  const recentTransactions = transactions.slice(0, 5);
+  const recentTransactions = transactions;
 
   if (accountsLoading) {
     return (
