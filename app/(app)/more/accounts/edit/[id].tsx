@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { useAccounts, useAccountMutations } from "~/lib/database/accounts";
@@ -18,6 +19,7 @@ type FormData = z.infer<typeof schema>;
 export default function EditAccountScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: accounts } = useAccounts();
   const { update } = useAccountMutations();
@@ -68,7 +70,7 @@ export default function EditAccountScreen() {
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
         <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-          Edit account
+          {t("accounts.edit")}
         </Text>
       </View>
 
@@ -85,8 +87,8 @@ export default function EditAccountScreen() {
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Account name"
-              placeholder="e.g. BBVA Current"
+              label={t("accounts.fields.name")}
+              placeholder={t("accounts.fields.namePlaceholder")}
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
@@ -100,7 +102,7 @@ export default function EditAccountScreen() {
           name="initial_balance"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Initial balance"
+              label={t("accounts.fields.initialBalance")}
               placeholder="0.00"
               keyboardType="decimal-pad"
               onChangeText={onChange}
@@ -112,7 +114,7 @@ export default function EditAccountScreen() {
         />
 
         <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-          Save changes
+          {t("common.save")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

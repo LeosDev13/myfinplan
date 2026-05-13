@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } fr
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import {
   useBudgetItemWithSpend,
   useLinkedTransactions,
@@ -34,6 +35,7 @@ export default function BudgetItemScreen() {
   const itemId  = Array.isArray(id) ? (id[0] ?? "") : (id ?? "");
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
+  const { t }   = useTranslation();
   const { workspaceId } = useWorkspace();
 
   const { data: item, isLoading }   = useBudgetItemWithSpend(itemId);
@@ -79,10 +81,10 @@ export default function BudgetItemScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert("Delete item", `Delete "${item?.name}"? This cannot be undone.`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("budgets.items.delete.title"), t("budgets.items.delete.message", { name: item?.name ?? "" }), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           await remove(itemId);
@@ -93,9 +95,9 @@ export default function BudgetItemScreen() {
   };
 
   const handleUnlink = (txId: string, txLabel: string) => {
-    Alert.alert("Unlink transaction", `Remove "${txLabel}" from this item?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Unlink", style: "destructive", onPress: () => unlink(itemId, txId) },
+    Alert.alert(t("budgets.items.unlink.title"), t("budgets.items.unlink.message", { name: txLabel }), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("common.delete"), style: "destructive", onPress: () => unlink(itemId, txId) },
     ]);
   };
 
@@ -150,7 +152,7 @@ export default function BudgetItemScreen() {
         </TouchableOpacity>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           <TouchableOpacity onPress={() => setPickerVisible(true)} hitSlop={8}>
-            <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>Link txn</Text>
+            <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>{t("budgets.items.link")}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={openEdit} hitSlop={8}>
             <Ionicons name="pencil-outline" size={20} color="#ffffff" />
@@ -186,10 +188,10 @@ export default function BudgetItemScreen() {
             {formatMoney(item.spent_cents, item.currency)}
           </Text>
           <Text style={{ color: "#525252", fontSize: 11, marginTop: 2 }}>
-            of {formatMoney(item.planned_cents, item.currency)} planned
+            {t("budgets.items.stats.of")} {formatMoney(item.planned_cents, item.currency)} {t("budgets.items.stats.planned")}
           </Text>
           <Text style={{ color: "#525252", fontSize: 11, marginTop: 1 }}>
-            {formatMoney(remaining, item.currency)} remaining
+            {formatMoney(remaining, item.currency)} {t("budgets.items.stats.remaining")}
           </Text>
         </View>
         <ProgressRing
@@ -210,16 +212,16 @@ export default function BudgetItemScreen() {
           paddingHorizontal: 16, paddingBottom: 8,
         }}
       >
-        Linked transactions
+        {t("budgets.items.stats.linked")}
       </Text>
 
       {/* Linked list */}
       {linkedTxns.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Text style={{ color: "#525252", fontSize: 14, fontWeight: "600" }}>
-            No transactions linked yet
+            {t("budgets.items.noLinked")}
           </Text>
-          <Text style={{ color: "#525252", fontSize: 12 }}>Tap "Link txn" to add one</Text>
+          <Text style={{ color: "#525252", fontSize: 12 }}>{t("budgets.items.noLinkedHint")}</Text>
         </View>
       ) : (
         <ScrollView
@@ -240,12 +242,12 @@ export default function BudgetItemScreen() {
       <Sheet
         visible={editVisible}
         onClose={() => { setEditVisible(false); setEditError(""); }}
-        title="Edit item"
+        title={`${t("common.edit")} ${t("budgets.items.save")}`}
       >
         <View className="gap-5 pb-4">
-          <Input label="Name" placeholder="Item name" value={editName} onChangeText={setEditName} />
+          <Input label={t("budgets.items.fields.name")} placeholder={t("budgets.items.fields.namePlaceholder")} value={editName} onChangeText={setEditName} />
           <Input
-            label="Planned amount"
+            label={t("budgets.items.fields.amount")}
             placeholder="0.00"
             keyboardType="decimal-pad"
             value={editAmount}
@@ -253,7 +255,7 @@ export default function BudgetItemScreen() {
           />
           {editError ? <Text style={{ color: "#ef4444", fontSize: 13 }}>{editError}</Text> : null}
           <Button onPress={handleEditSave} loading={editSaving} disabled={!editName.trim()}>
-            Save changes
+            {t("common.save")}
           </Button>
         </View>
       </Sheet>
@@ -262,13 +264,13 @@ export default function BudgetItemScreen() {
       <Sheet
         visible={pickerVisible}
         onClose={() => { setPickerVisible(false); setSelected(new Set()); }}
-        title="Link transactions"
+        title={t("budgets.items.link")}
       >
         <View className="gap-4 pb-4">
           {unlinkedTxns.length === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: 24 }}>
               <Text style={{ color: "#525252", fontSize: 14 }}>
-                All transactions already linked
+                {t("budgets.items.allLinked")}
               </Text>
             </View>
           ) : (
@@ -294,7 +296,7 @@ export default function BudgetItemScreen() {
             loading={linking}
             disabled={selected.size === 0}
           >
-            {`Link ${selected.size} transaction${selected.size !== 1 ? "s" : ""}`}
+            {t("budgets.items.linkButton", { count: selected.size })}
           </Button>
         </View>
       </Sheet>

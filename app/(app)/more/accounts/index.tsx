@@ -11,6 +11,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useAccounts, useAccountMutations } from "~/lib/database/accounts";
 import type { AccountWithBalance } from "~/lib/types";
 
@@ -29,6 +30,7 @@ function AccountRow({
   onDelete: () => void;
 }) {
   const swipeRef = useRef<Swipeable>(null);
+  const { t } = useTranslation();
   const balance = account.balance_cents;
   const isPositive = balance >= 0;
 
@@ -59,7 +61,7 @@ function AccountRow({
         >
           <Ionicons name="trash-outline" size={20} color="#ffffff" />
           <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "600", marginTop: 3 }}>
-            Delete
+            {t("common.delete")}
           </Text>
         </TouchableOpacity>
       </Animated.View>
@@ -90,7 +92,7 @@ function AccountRow({
             {account.name}
           </Text>
           <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
-            {account.account_type === "shared" ? "Shared" : account.owner} · {account.currency}
+            {account.account_type === "shared" ? t("accounts.types.shared") : account.owner} · {account.currency}
           </Text>
         </View>
         <Text style={{ color: isPositive ? "#10b981" : "#ef4444", fontSize: 15, fontWeight: "700" }}>
@@ -105,16 +107,17 @@ function AccountRow({
 export default function AccountsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { data: accounts, isLoading } = useAccounts();
   const { remove } = useAccountMutations();
 
   const handleDelete = (account: AccountWithBalance) => {
     Alert.alert(
-      "Delete account",
-      `Delete "${account.name}"? This cannot be undone.`,
+      t("accounts.delete.title"),
+      t("accounts.delete.message", { name: account.name }),
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => remove(account.id) },
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("common.delete"), style: "destructive", onPress: () => remove(account.id) },
       ]
     );
   };
@@ -133,7 +136,7 @@ export default function AccountsScreen() {
         }}
       >
         <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
-          Accounts
+          {t("accounts.title")}
         </Text>
         <TouchableOpacity
           onPress={() => router.push("/(app)/more/accounts/add")}
@@ -146,15 +149,15 @@ export default function AccountsScreen() {
       {/* List */}
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#525252" }}>Loading…</Text>
+          <Text style={{ color: "#525252" }}>{t("common.loading")}</Text>
         </View>
       ) : accounts.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
           <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600", textAlign: "center" }}>
-            No accounts yet
+            {t("accounts.noAccounts")}
           </Text>
           <Text style={{ color: "#525252", fontSize: 13, marginTop: 4, textAlign: "center" }}>
-            Tap + to add your first account
+            {t("accounts.noAccountsHint")}
           </Text>
         </View>
       ) : (

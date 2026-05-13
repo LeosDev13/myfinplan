@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { useCategoryMutations } from "~/lib/database/categories";
@@ -18,6 +19,7 @@ type FormData = z.infer<typeof schema>;
 export default function AddCategoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { workspaceId } = useWorkspace();
   const { createCategory } = useCategoryMutations();
 
@@ -59,7 +61,7 @@ export default function AddCategoryScreen() {
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
         <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-          New category
+          {t("categories.add")}
         </Text>
       </View>
 
@@ -76,8 +78,8 @@ export default function AddCategoryScreen() {
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Name"
-              placeholder="e.g. Subscriptions"
+              label={t("categories.fields.name")}
+              placeholder={t("categories.fields.namePlaceholder")}
               autoCapitalize="words"
               autoFocus
               onChangeText={onChange}
@@ -89,7 +91,7 @@ export default function AddCategoryScreen() {
         />
 
         <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-          Add category
+          {t("categories.save")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

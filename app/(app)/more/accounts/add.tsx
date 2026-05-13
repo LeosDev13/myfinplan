@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Select } from "~/components/ui/select";
@@ -20,11 +21,6 @@ const schema = z.object({
   initial_balance: z.string().regex(/^-?\d+([.,]\d{1,2})?$/, "Invalid amount"),
 });
 type FormData = z.infer<typeof schema>;
-
-const ACCOUNT_TYPE_OPTIONS: { label: string; value: AccountType }[] = [
-  { label: "Personal", value: "personal" },
-  { label: "Shared", value: "shared" },
-];
 
 const CURRENCY_OPTIONS = [
   { label: "EUR — Euro", value: "EUR" },
@@ -50,8 +46,14 @@ const CURRENCY_OPTIONS = [
 export default function AddAccountScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { workspaceId } = useWorkspace();
   const { create } = useAccountMutations();
+
+  const ACCOUNT_TYPE_OPTIONS: { label: string; value: AccountType }[] = [
+    { label: t("accounts.types.personal"), value: "personal" },
+    { label: t("accounts.types.shared"), value: "shared" },
+  ];
 
   const {
     control,
@@ -104,7 +106,7 @@ export default function AddAccountScreen() {
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
         <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-          New account
+          {t("accounts.add")}
         </Text>
       </View>
 
@@ -121,8 +123,8 @@ export default function AddAccountScreen() {
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Account name"
-              placeholder="e.g. BBVA Current"
+              label={t("accounts.fields.name")}
+              placeholder={t("accounts.fields.namePlaceholder")}
               onChangeText={onChange}
               onBlur={onBlur}
               value={value}
@@ -136,7 +138,7 @@ export default function AddAccountScreen() {
           name="account_type"
           render={({ field: { onChange, value } }) => (
             <Select
-              label="Type"
+              label={t("accounts.fields.type")}
               options={ACCOUNT_TYPE_OPTIONS}
               value={value}
               onChange={onChange}
@@ -150,8 +152,8 @@ export default function AddAccountScreen() {
           name="owner"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Owner"
-              placeholder="e.g. Leo"
+              label={t("accounts.fields.owner")}
+              placeholder={t("accounts.fields.ownerPlaceholder")}
               autoCapitalize="words"
               onChangeText={onChange}
               onBlur={onBlur}
@@ -166,7 +168,7 @@ export default function AddAccountScreen() {
           name="currency"
           render={({ field: { onChange, value } }) => (
             <Select
-              label="Currency"
+              label={t("accounts.fields.currency")}
               options={CURRENCY_OPTIONS}
               value={value}
               onChange={onChange}
@@ -180,7 +182,7 @@ export default function AddAccountScreen() {
           name="initial_balance"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Initial balance"
+              label={t("accounts.fields.initialBalance")}
               placeholder="0.00"
               keyboardType="decimal-pad"
               onChangeText={onChange}
@@ -192,7 +194,7 @@ export default function AddAccountScreen() {
         />
 
         <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-          Add account
+          {t("accounts.save")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

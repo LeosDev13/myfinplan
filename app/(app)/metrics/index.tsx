@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useWorkspace } from "~/app/providers/WorkspaceProvider";
 import {
   useMetricsSummary,
@@ -10,13 +11,6 @@ import {
 } from "~/lib/database/metrics";
 
 type Period = "this-month" | "last-month" | "6-months" | "year";
-
-const PERIOD_LABELS: { key: Period; label: string }[] = [
-  { key: "this-month",  label: "This month" },
-  { key: "last-month",  label: "Last month" },
-  { key: "6-months",    label: "6 months" },
-  { key: "year",        label: "Year" },
-];
 
 const MAX_BAR_HEIGHT = 80;
 
@@ -69,8 +63,16 @@ function formatMoney(cents: number): string {
 
 export default function MetricsScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { workspaceId } = useWorkspace();
   const [period, setPeriod] = useState<Period>("this-month");
+
+  const PERIOD_LABELS: { key: Period; label: string }[] = [
+    { key: "this-month", label: t("metrics.periods.thisMonth") },
+    { key: "last-month", label: t("metrics.periods.lastMonth") },
+    { key: "6-months",   label: t("metrics.periods.sixMonths") },
+    { key: "year",       label: t("metrics.periods.year") },
+  ];
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   const { from, to, trendMonths } = useMemo(() => getPeriodRange(period), [period]);
@@ -117,7 +119,7 @@ export default function MetricsScreen() {
         }}
       >
         <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
-          Metrics
+          {t("metrics.title")}
         </Text>
       </View>
 
@@ -166,10 +168,10 @@ export default function MetricsScreen() {
         {/* ── Section 1: Summary row ── */}
         <View style={{ flexDirection: "row", gap: 8 }}>
           {[
-            { label: "Income", value: summary?.income_cents ?? 0,  color: "#10b981" },
-            { label: "Spent",  value: summary?.expense_cents ?? 0, color: "#ef4444" },
+            { label: t("metrics.summary.income"), value: summary?.income_cents ?? 0,  color: "#10b981" },
+            { label: t("metrics.summary.spent"),  value: summary?.expense_cents ?? 0, color: "#ef4444" },
             {
-              label: "Saved",
+              label: t("metrics.summary.saved"),
               value: savedCents,
               color: savedCents >= 0 ? "#10b981" : "#ef4444",
             },
@@ -214,7 +216,7 @@ export default function MetricsScreen() {
               marginBottom: 12,
             }}
           >
-            Top Categories
+            {t("metrics.topCategories")}
           </Text>
 
           {categories.length === 0 ? (
@@ -226,7 +228,7 @@ export default function MetricsScreen() {
                 paddingVertical: 8,
               }}
             >
-              No spending data for this period
+              {t("metrics.noSpending")}
             </Text>
           ) : (
             categories.map((cat) => {
@@ -325,7 +327,7 @@ export default function MetricsScreen() {
               marginBottom: 12,
             }}
           >
-            Monthly Cash Flow
+            {t("metrics.cashFlow")}
           </Text>
 
           <View
@@ -389,13 +391,13 @@ export default function MetricsScreen() {
               <View
                 style={{ width: 8, height: 8, backgroundColor: "#10b981", borderRadius: 2 }}
               />
-              <Text style={{ color: "#525252", fontSize: 10 }}>Income</Text>
+              <Text style={{ color: "#525252", fontSize: 10 }}>{t("metrics.summary.income")}</Text>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
               <View
                 style={{ width: 8, height: 8, backgroundColor: "#ef4444", borderRadius: 2 }}
               />
-              <Text style={{ color: "#525252", fontSize: 10 }}>Expenses</Text>
+              <Text style={{ color: "#525252", fontSize: 10 }}>{t("metrics.summary.spent")}</Text>
             </View>
           </View>
         </View>

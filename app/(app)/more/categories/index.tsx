@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import {
   useCategoriesWithSubs,
   useCategoryMutations,
@@ -22,12 +23,13 @@ function SubcategoryRow({
   sub: Subcategory;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <View className="flex-row items-center justify-between pl-6 pr-2 py-2.5 border-t border-border">
       <Text className="text-sm text-foreground flex-1">{sub.name}</Text>
       {sub.is_built_in === 0 && (
         <TouchableOpacity onPress={onDelete} className="px-2 py-1">
-          <Text className="text-destructive text-sm">Delete</Text>
+          <Text className="text-destructive text-sm">{t("common.delete")}</Text>
         </TouchableOpacity>
       )}
       {sub.is_built_in === 1 && (
@@ -53,6 +55,7 @@ function CategoryRow({
   onAddSub: () => void;
   onDeleteSub: (sub: Subcategory) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <View className="bg-card rounded-xl border border-border overflow-hidden">
       {/* Category header */}
@@ -75,7 +78,7 @@ function CategoryRow({
             onPress={onDelete}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text className="text-destructive text-sm">Delete</Text>
+            <Text className="text-destructive text-sm">{t("common.delete")}</Text>
           </TouchableOpacity>
         )}
       </TouchableOpacity>
@@ -94,7 +97,7 @@ function CategoryRow({
             onPress={onAddSub}
             className="flex-row items-center gap-2 pl-6 pr-4 py-2.5 border-t border-border"
           >
-            <Text className="text-sm text-primary font-medium">+ Add subcategory</Text>
+            <Text className="text-sm text-primary font-medium">+ {t("categories.saveSub")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -105,6 +108,7 @@ function CategoryRow({
 // ─── screen ──────────────────────────────────────────────────
 export default function CategoriesScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { data: categories, isLoading } = useCategoriesWithSubs();
   const { deleteCategory, deleteSubcategory } = useCategoryMutations();
 
@@ -120,19 +124,19 @@ export default function CategoriesScreen() {
 
   const handleDeleteCategory = async (category: CategoryWithSubs) => {
     Alert.alert(
-      "Delete category",
-      `Delete "${category.name}" and all its subcategories?`,
+      t("categories.delete.title"),
+      t("categories.delete.message", { name: category.name }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
             const result = await deleteCategory(category.id, category.name);
             if (result === "has_transactions") {
               Alert.alert(
-                "Cannot delete",
-                `"${category.name}" is used by existing transactions. Remove or recategorise them first.`
+                t("common.error"),
+                t("categories.delete.hasTransactions")
               );
             }
           },
@@ -143,12 +147,12 @@ export default function CategoriesScreen() {
 
   const handleDeleteSubcategory = (sub: Subcategory) => {
     Alert.alert(
-      "Delete subcategory",
-      `Delete "${sub.name}"?`,
+      t("categories.delete.title"),
+      t("categories.delete.message", { name: sub.name }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           style: "destructive",
           onPress: () => deleteSubcategory(sub.id),
         },
@@ -160,7 +164,7 @@ export default function CategoriesScreen() {
     <View className="flex-1 bg-background">
       {/* Header */}
       <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-foreground">Categories</Text>
+        <Text className="text-2xl font-bold text-foreground">{t("categories.title")}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(app)/more/categories/add")}
           className="bg-primary rounded-full w-9 h-9 items-center justify-center"
@@ -171,7 +175,7 @@ export default function CategoriesScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-muted-foreground">Loading...</Text>
+          <Text className="text-muted-foreground">{t("common.loading")}</Text>
         </View>
       ) : (
         <ScrollView contentContainerClassName="px-4 gap-3 pb-10">
@@ -190,7 +194,7 @@ export default function CategoriesScreen() {
           {categories.length === 0 && (
             <View className="mt-20 items-center">
               <Text className="text-muted-foreground text-center">
-                No categories yet.{"\n"}Tap + to add one.
+                {t("categories.noCategories")}{"\n"}{t("categories.noCategoriesHint")}
               </Text>
             </View>
           )}

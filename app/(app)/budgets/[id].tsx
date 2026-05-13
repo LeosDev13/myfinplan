@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import {
   useBudgetWithTotals,
   useBudgetItemsWithSpend,
@@ -89,6 +90,7 @@ export default function BudgetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
+  const { t }   = useTranslation();
   const { data: budget, isLoading } = useBudgetWithTotals(id);
   const { data: items }       = useBudgetItemsWithSpend(id);
   const { update: updateBudget, remove: removeBudget } = useBudgetMutations();
@@ -139,10 +141,10 @@ export default function BudgetDetailScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert("Delete budget", `Delete "${budget?.name}"? This cannot be undone.`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("budgets.delete.title"), t("budgets.delete.message", { name: budget?.name ?? "" }), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           await removeBudget(id);
@@ -203,7 +205,7 @@ export default function BudgetDetailScreen() {
         </TouchableOpacity>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           <TouchableOpacity onPress={() => setSheetVisible(true)} hitSlop={8}>
-            <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>+ Item</Text>
+            <Text style={{ color: "#10b981", fontSize: 14, fontWeight: "600" }}>+ {t("budgets.items.add")}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setEditVisible(true)} hitSlop={8}>
             <Ionicons name="pencil-outline" size={20} color="#ffffff" />
@@ -246,9 +248,9 @@ export default function BudgetDetailScreen() {
         />
         <View style={{ flexDirection: "row", gap: 32, marginTop: 14 }}>
           {[
-            { label: "Spent",   value: formatMoney(budget.spent_cents, budget.currency),         statColor: color },
-            { label: "Left",    value: formatMoney(remaining, budget.currency),                  statColor: "#525252" },
-            { label: "Planned", value: formatMoney(budget.total_planned_cents, budget.currency), statColor: "#525252" },
+            { label: t("budgets.items.stats.spent"),   value: formatMoney(budget.spent_cents, budget.currency),         statColor: color },
+            { label: t("budgets.items.stats.left"),    value: formatMoney(remaining, budget.currency),                  statColor: "#525252" },
+            { label: t("budgets.items.stats.planned"), value: formatMoney(budget.total_planned_cents, budget.currency), statColor: "#525252" },
           ].map((stat) => (
             <View key={stat.label} style={{ alignItems: "center" }}>
               <Text style={{ color: stat.statColor, fontSize: 15, fontWeight: "700" }}>{stat.value}</Text>
@@ -268,8 +270,8 @@ export default function BudgetDetailScreen() {
       {/* Items list */}
       {items.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <Text style={{ color: "#525252", fontSize: 14, fontWeight: "600" }}>No items yet</Text>
-          <Text style={{ color: "#525252", fontSize: 12 }}>Tap + Item to add one</Text>
+          <Text style={{ color: "#525252", fontSize: 14, fontWeight: "600" }}>{t("budgets.items.title")}</Text>
+          <Text style={{ color: "#525252", fontSize: 12 }}>{t("budgets.items.hint")}</Text>
         </View>
       ) : (
         <FlatList
@@ -291,12 +293,12 @@ export default function BudgetDetailScreen() {
       <Sheet
         visible={editVisible}
         onClose={() => { setEditVisible(false); setEditError(""); }}
-        title="Edit budget"
+        title={t("budgets.edit")}
       >
         <View className="gap-5 pb-4">
-          <Input label="Name" placeholder="Budget name" value={editName} onChangeText={setEditName} />
+          <Input label={t("budgets.fields.name")} placeholder={t("budgets.fields.namePlaceholder")} value={editName} onChangeText={setEditName} />
           <Select
-            label="Currency"
+            label={t("budgets.fields.currency")}
             options={[
               { label: "EUR €", value: "EUR" },
               { label: "USD $", value: "USD" },
@@ -305,10 +307,10 @@ export default function BudgetDetailScreen() {
             value={editCurrency}
             onChange={setEditCurrency}
           />
-          <Input label="Notes" placeholder="Optional" value={editNotes} onChangeText={setEditNotes} />
+          <Input label={t("budgets.fields.notes")} placeholder={t("common.optional")} value={editNotes} onChangeText={setEditNotes} />
           {editError ? <Text style={{ color: "#ef4444", fontSize: 13 }}>{editError}</Text> : null}
           <Button onPress={handleEditSave} loading={editSaving} disabled={!editName.trim()}>
-            Save changes
+            {t("budgets.editSave")}
           </Button>
         </View>
       </Sheet>
@@ -317,17 +319,17 @@ export default function BudgetDetailScreen() {
       <Sheet
         visible={sheetVisible}
         onClose={() => { setSheetVisible(false); resetForm(); }}
-        title="Add item"
+        title={t("budgets.items.add")}
       >
         <View className="gap-5 pb-4">
           <Input
-            label="Name"
-            placeholder="e.g. Flights"
+            label={t("budgets.items.fields.name")}
+            placeholder={t("budgets.items.fields.namePlaceholder")}
             value={itemName}
             onChangeText={setItemName}
           />
           <Input
-            label="Planned amount"
+            label={t("budgets.items.fields.amount")}
             placeholder="0.00"
             keyboardType="decimal-pad"
             value={itemAmount}
@@ -341,7 +343,7 @@ export default function BudgetDetailScreen() {
             loading={saving}
             disabled={!itemName.trim() || !itemAmount}
           >
-            Add item
+            {t("budgets.items.save")}
           </Button>
         </View>
       </Sheet>

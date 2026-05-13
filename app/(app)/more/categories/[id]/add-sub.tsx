@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { useCategoriesWithSubs, useCategoryMutations } from "~/lib/database/categories";
@@ -17,6 +18,7 @@ type FormData = z.infer<typeof schema>;
 export default function AddSubcategoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: categories } = useCategoriesWithSubs();
   const { createSubcategory } = useCategoryMutations();
@@ -58,7 +60,7 @@ export default function AddSubcategoryScreen() {
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
         <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
-          Add to {category?.name ?? "category"}
+          {t("categories.addSub", { name: category?.name ?? "" })}
         </Text>
       </View>
 
@@ -75,8 +77,8 @@ export default function AddSubcategoryScreen() {
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              label="Subcategory name"
-              placeholder="e.g. Netflix"
+              label={t("categories.fields.subName")}
+              placeholder={t("categories.fields.subNamePlaceholder")}
               autoCapitalize="words"
               autoFocus
               onChangeText={onChange}
@@ -88,7 +90,7 @@ export default function AddSubcategoryScreen() {
         />
 
         <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-          Add subcategory
+          {t("categories.saveSub")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import {
   useBudgets,
@@ -86,6 +87,7 @@ function BudgetCard({
 export default function BudgetsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { workspaceId } = useWorkspace();
   const { data: budgets, isLoading } = useBudgets(workspaceId ?? "");
   const { create, remove } = useBudgetMutations();
@@ -136,7 +138,7 @@ export default function BudgetsScreen() {
         }}
       >
         <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
-          Budgets
+          {t("budgets.title")}
         </Text>
         <TouchableOpacity onPress={() => setSheetVisible(true)} hitSlop={8}>
           <Ionicons name="add" size={26} color="#10b981" />
@@ -150,8 +152,8 @@ export default function BudgetsScreen() {
         </View>
       ) : budgets.length === 0 ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600" }}>No budgets yet</Text>
-          <Text style={{ color: "#525252", fontSize: 13 }}>Tap + to create one</Text>
+          <Text style={{ color: "#525252", fontSize: 16, fontWeight: "600" }}>{t("budgets.noBudgets")}</Text>
+          <Text style={{ color: "#525252", fontSize: 13 }}>{t("budgets.noBudgetsHint")}</Text>
         </View>
       ) : (
         <FlatList
@@ -167,9 +169,9 @@ export default function BudgetsScreen() {
               budget={item}
               onPress={() => router.push(`/budgets/${item.id}`)}
               onLongPress={() =>
-                Alert.alert("Delete budget", `Delete "${item.name}"? This cannot be undone.`, [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Delete", style: "destructive", onPress: () => remove(item.id) },
+                Alert.alert(t("budgets.delete.title"), t("budgets.delete.message", { name: item.name }), [
+                  { text: t("common.cancel"), style: "cancel" },
+                  { text: t("common.delete"), style: "destructive", onPress: () => remove(item.id) },
                 ])
               }
             />
@@ -181,18 +183,18 @@ export default function BudgetsScreen() {
       <Sheet
         visible={sheetVisible}
         onClose={() => { setSheetVisible(false); resetForm(); }}
-        title="New budget"
+        title={t("budgets.add")}
       >
         <View className="gap-5 pb-4">
           <Input
-            label="Name"
-            placeholder="e.g. Summer Holiday"
+            label={t("budgets.fields.name")}
+            placeholder={t("budgets.fields.namePlaceholder")}
             value={name}
             onChangeText={setName}
           />
 
           <Select
-            label="Currency"
+            label={t("budgets.fields.currency")}
             options={[
               { label: "EUR €", value: "EUR" },
               { label: "USD $", value: "USD" },
@@ -205,7 +207,7 @@ export default function BudgetsScreen() {
           {/* Event date */}
           <View>
             <Text className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
-              Event Date
+              {t("budgets.fields.eventDate")}
             </Text>
             <TouchableOpacity
               onPress={() => setShowPicker(true)}
@@ -232,7 +234,7 @@ export default function BudgetsScreen() {
                       month: "short",
                       year: "numeric",
                     })
-                  : "Optional"}
+                  : t("common.optional")}
               </Text>
             </TouchableOpacity>
             {showPicker && (
@@ -249,8 +251,8 @@ export default function BudgetsScreen() {
           </View>
 
           <Input
-            label="Notes"
-            placeholder="Optional"
+            label={t("budgets.fields.notes")}
+            placeholder={t("common.optional")}
             value={notes}
             onChangeText={setNotes}
           />
@@ -260,7 +262,7 @@ export default function BudgetsScreen() {
           ) : null}
 
           <Button onPress={handleSave} loading={saving} disabled={!name.trim()}>
-            Create budget
+            {t("budgets.save")}
           </Button>
         </View>
       </Sheet>
