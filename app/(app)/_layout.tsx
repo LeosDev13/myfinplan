@@ -90,14 +90,17 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 export default function AppLayout() {
   return (
     <Tabs
-      screenOptions={{ headerShown: false }}
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        unmountOnBlur: route.name === "more",
+      })}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
       <Tabs.Screen name="transactions" options={{ title: "Transactions" }} />
       <Tabs.Screen name="budgets/index" options={{ title: "Budgets" }} />
       <Tabs.Screen name="metrics/index" options={{ title: "Metrics" }} />
-      <Tabs.Screen name="more" options={{ title: "Accounts" }} />
+      <Tabs.Screen name="more" options={{ title: "More" }} />
     </Tabs>
   );
 }
