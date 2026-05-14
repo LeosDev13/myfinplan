@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface SheetProps {
   visible: boolean;
@@ -17,6 +18,7 @@ interface SheetProps {
 }
 
 export function Sheet({ visible, onClose, title, children }: SheetProps) {
+  const { t } = useTranslation();
   return (
     <Modal
       visible={visible}
@@ -42,7 +44,7 @@ export function Sheet({ visible, onClose, title, children }: SheetProps) {
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-lg font-semibold text-foreground">{title}</Text>
               <TouchableOpacity onPress={onClose}>
-                <Text className="text-destructive text-base font-medium">Cancel</Text>
+                <Text className="text-destructive text-base font-medium">{t("common.cancel")}</Text>
               </TouchableOpacity>
             </View>
           )}
