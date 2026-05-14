@@ -1,22 +1,24 @@
 import { Tabs } from "expo-router";
 import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 const TABS: {
   name: string;
-  label: string;
+  labelKey: string;
   icon: keyof typeof Ionicons.glyphMap;
   iconActive: keyof typeof Ionicons.glyphMap;
 }[] = [
-  { name: "index",              label: "Home",     icon: "home-outline",       iconActive: "home" },
-  { name: "transactions",       label: "Activity", icon: "swap-vertical-outline", iconActive: "swap-vertical" },
-  { name: "budgets/index",      label: "Budgets",  icon: "wallet-outline",        iconActive: "wallet" },
-  { name: "metrics/index",      label: "Metrics",  icon: "bar-chart-outline",     iconActive: "bar-chart" },
-  { name: "more",               label: "More",     icon: "ellipsis-horizontal-outline", iconActive: "ellipsis-horizontal" },
+  { name: "index",        labelKey: "dashboard.title",    icon: "home-outline",                iconActive: "home" },
+  { name: "transactions", labelKey: "transactions.title", icon: "swap-vertical-outline",       iconActive: "swap-vertical" },
+  { name: "budgets",      labelKey: "budgets.title",      icon: "wallet-outline",              iconActive: "wallet" },
+  { name: "metrics",      labelKey: "metrics.title",      icon: "bar-chart-outline",           iconActive: "bar-chart" },
+  { name: "more",         labelKey: "more.title",         icon: "ellipsis-horizontal-outline", iconActive: "ellipsis-horizontal" },
 ];
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { t } = useTranslation();
   return (
     <View
       style={{
@@ -78,7 +80,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 letterSpacing: 0.2,
               }}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </Text>
           </TouchableOpacity>
         );
@@ -98,8 +100,8 @@ export default function AppLayout() {
     >
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
       <Tabs.Screen name="transactions" options={{ title: "Transactions" }} />
-      <Tabs.Screen name="budgets/index" options={{ title: "Budgets" }} />
-      <Tabs.Screen name="metrics/index" options={{ title: "Metrics" }} />
+      <Tabs.Screen name="budgets" options={{ title: "Budgets" }} />
+      <Tabs.Screen name="metrics" options={{ title: "Metrics" }} />
       <Tabs.Screen name="more" options={{ title: "More" }} />
     </Tabs>
   );
