@@ -237,6 +237,10 @@
       "saved": "Ahorrado"
     },
     "topCategories": "Principales categorías",
+    "topMerchants": "Principales comercios",
+    "largestExpense": "Mayor gasto",
+    "savingsRate": "Tasa de ahorro",
+    "avgDaily": "Gasto diario medio",
     "noSpending": "Sin datos de gasto para este período",
     "cashFlow": "Flujo de caja mensual"
   },

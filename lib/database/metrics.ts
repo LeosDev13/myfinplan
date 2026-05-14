@@ -101,6 +101,48 @@ export function useCategoryBreakdown(
 }
 
 /**
+ * Top merchants by total expense amount for the given period (max 5).
+ * Excludes transactions with null or empty merchant.
+ */
+export function useTopMerchants(workspaceId: string, from: string, to: string) {
+  return useQuery<{ merchant: string; total_cents: number; count: number }>(
+    `SELECT
+       merchant,
+       COALESCE(SUM(amount_cents), 0) AS total_cents,
+       COUNT(*) AS count
+     FROM transactions
+     WHERE workspace_id = ?
+       AND transaction_type = 'expense'
+       AND datetime >= ?
+       AND datetime <= ?
+       AND merchant IS NOT NULL
+       AND merchant != ''
+     GROUP BY merchant
+     ORDER BY total_cents DESC
+     LIMIT 5`,
+    [workspaceId, from, to]
+  );
+}
+
+/**
+ * The single largest expense transaction in the period.
+ */
+export function useLargestExpense(workspaceId: string, from: string, to: string) {
+  const result = useQuery<{ merchant: string | null; category: string; amount_cents: number; datetime: string }>(
+    `SELECT merchant, category, amount_cents, datetime
+     FROM transactions
+     WHERE workspace_id = ?
+       AND transaction_type = 'expense'
+       AND datetime >= ?
+       AND datetime <= ?
+     ORDER BY amount_cents DESC
+     LIMIT 1`,
+    [workspaceId, from, to]
+  );
+  return { data: result.data[0] ?? null, isLoading: result.isLoading };
+}
+
+/**
  * Returns income and expense totals grouped by calendar month ("YYYY-MM")
  * for the given date window, ordered oldest→newest.
  *

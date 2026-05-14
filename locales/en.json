@@ -237,6 +237,10 @@
       "saved": "Saved"
     },
     "topCategories": "Top Categories",
+    "topMerchants": "Top Merchants",
+    "largestExpense": "Largest Expense",
+    "savingsRate": "Savings Rate",
+    "avgDaily": "Avg Daily Spend",
     "noSpending": "No spending data for this period",
     "cashFlow": "Monthly Cash Flow"
   },

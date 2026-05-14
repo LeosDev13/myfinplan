@@ -8,6 +8,8 @@ import {
   useMetricsSummary,
   useCategoryBreakdown,
   useMonthlyTrend,
+  useTopMerchants,
+  useLargestExpense,
   generateMonthRange,
 } from "~/lib/database/metrics";
 
@@ -96,7 +98,21 @@ export default function MetricsScreen() {
   const { data: summary,    isLoading: summaryLoading }    = useMetricsSummary(ws, from, to);
   const { data: categories, isLoading: categoriesLoading } = useCategoryBreakdown(ws, from, to);
   const { data: trendData,  isLoading: trendLoading }      = useMonthlyTrend(ws, trendFrom, trendTo);
+  const { data: merchants }                                 = useTopMerchants(ws, from, to);
+  const { data: largestExpense }                            = useLargestExpense(ws, from, to);
   const isLoading = summaryLoading || categoriesLoading || trendLoading;
+
+  // Derived stats
+  const daysInPeriod = useMemo(() => {
+    const diff = new Date(to).getTime() - new Date(from).getTime();
+    return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }, [from, to]);
+
+  const savingsRate = (summary?.income_cents ?? 0) > 0
+    ? Math.round(((summary?.income_cents ?? 0) - (summary?.expense_cents ?? 0)) / (summary?.income_cents ?? 1) * 100)
+    : null;
+
+  const avgDailySpend = (summary?.expense_cents ?? 0) / daysInPeriod;
 
   const savedCents = (summary?.income_cents ?? 0) - (summary?.expense_cents ?? 0);
 
@@ -212,7 +228,82 @@ export default function MetricsScreen() {
           ))}
         </View>
 
-        {/* ── Section 2: Top Categories ── */}
+        {/* ── Section 2: Savings rate + Avg daily spend ── */}
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {/* Savings rate */}
+          <View style={{ flex: 1, backgroundColor: "#141414", borderRadius: 16, padding: 12 }}>
+            <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+              {t("metrics.savingsRate")}
+            </Text>
+            {savingsRate !== null ? (
+              <Text style={{ color: savingsRate >= 0 ? "#10b981" : "#ef4444", fontSize: 22, fontWeight: "800" }}>
+                {savingsRate}%
+              </Text>
+            ) : (
+              <Text style={{ color: "#525252", fontSize: 14, fontWeight: "600" }}>—</Text>
+            )}
+          </View>
+
+          {/* Avg daily spend */}
+          <View style={{ flex: 1, backgroundColor: "#141414", borderRadius: 16, padding: 12 }}>
+            <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+              {t("metrics.avgDaily")}
+            </Text>
+            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "800" }}>
+              {formatMoney(currency, Math.round(avgDailySpend))}
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Section 3: Largest expense ── */}
+        {largestExpense && (
+          <View style={{ backgroundColor: "#141414", borderRadius: 16, padding: 16 }}>
+            <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>
+              {t("metrics.largestExpense")}
+            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#ffffff", fontSize: 15, fontWeight: "700" }} numberOfLines={1}>
+                  {largestExpense.merchant || largestExpense.category}
+                </Text>
+                <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
+                  {largestExpense.merchant ? largestExpense.category : ""}
+                  {largestExpense.merchant ? " · " : ""}
+                  {new Date(largestExpense.datetime).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+                </Text>
+              </View>
+              <Text style={{ color: "#ef4444", fontSize: 18, fontWeight: "800", marginLeft: 12 }}>
+                {formatMoney(currency, largestExpense.amount_cents)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* ── Section 4: Top Merchants ── */}
+        {merchants.length > 0 && (
+          <View style={{ backgroundColor: "#141414", borderRadius: 16, padding: 16 }}>
+            <Text style={{ color: "#525252", fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>
+              {t("metrics.topMerchants")}
+            </Text>
+            {merchants.map((m, i) => (
+              <View
+                key={m.merchant}
+                style={{ flexDirection: "row", alignItems: "center", marginBottom: i < merchants.length - 1 ? 10 : 0 }}
+              >
+                <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: "#1f1f1f", alignItems: "center", justifyContent: "center", marginRight: 10 }}>
+                  <Text style={{ color: "#525252", fontSize: 10, fontWeight: "700" }}>{i + 1}</Text>
+                </View>
+                <Text style={{ flex: 1, color: "#ffffff", fontSize: 13, fontWeight: "600" }} numberOfLines={1}>{m.merchant}</Text>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "700" }}>{formatMoney(currency, m.total_cents)}</Text>
+                  <Text style={{ color: "#525252", fontSize: 10, marginTop: 1 }}>{m.count}×</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* ── Section 5: Top Categories ── */}
         <View style={{ backgroundColor: "#141414", borderRadius: 16, padding: 16 }}>
           <Text
             style={{
@@ -323,7 +414,7 @@ export default function MetricsScreen() {
           )}
         </View>
 
-        {/* ── Section 3: Monthly Cash Flow ── */}
+        {/* ── Section 6: Monthly Cash Flow ── */}
         <View style={{ backgroundColor: "#141414", borderRadius: 16, padding: 16 }}>
           <Text
             style={{
