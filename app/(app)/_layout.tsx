@@ -13,7 +13,7 @@ const TABS: {
   { name: "index",        labelKey: "dashboard.title",    icon: "home-outline",                iconActive: "home" },
   { name: "transactions", labelKey: "transactions.title", icon: "swap-vertical-outline",       iconActive: "swap-vertical" },
   { name: "budgets",      labelKey: "budgets.title",      icon: "wallet-outline",              iconActive: "wallet" },
-  { name: "metrics",      labelKey: "metrics.title",      icon: "bar-chart-outline",           iconActive: "bar-chart" },
+  { name: "metrics/index", labelKey: "metrics.title",      icon: "bar-chart-outline",           iconActive: "bar-chart" },
   { name: "more",         labelKey: "more.title",         icon: "ellipsis-horizontal-outline", iconActive: "ellipsis-horizontal" },
 ];
 
@@ -101,7 +101,7 @@ export default function AppLayout() {
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
       <Tabs.Screen name="transactions" options={{ title: "Transactions" }} />
       <Tabs.Screen name="budgets" options={{ title: "Budgets" }} />
-      <Tabs.Screen name="metrics" options={{ title: "Metrics" }} />
+      <Tabs.Screen name="metrics/index" options={{ title: "Metrics" }} />
       <Tabs.Screen name="more" options={{ title: "More" }} />
     </Tabs>
   );
