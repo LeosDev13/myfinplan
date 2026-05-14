@@ -7,6 +7,8 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import {
   useCategoriesWithSubs,
@@ -108,6 +110,7 @@ function CategoryRow({
 // ─── screen ──────────────────────────────────────────────────
 export default function CategoriesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { data: categories, isLoading } = useCategoriesWithSubs();
   const { deleteCategory, deleteSubcategory } = useCategoryMutations();
@@ -163,8 +166,14 @@ export default function CategoriesScreen() {
   return (
     <View className="flex-1 bg-background">
       {/* Header */}
-      <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-foreground">{t("categories.title")}</Text>
+      <View
+        style={{ paddingTop: insets.top + 12, paddingBottom: 12, paddingHorizontal: 16 }}
+        className="flex-row items-center gap-3"
+      >
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+        </TouchableOpacity>
+        <Text className="flex-1 text-2xl font-bold text-foreground">{t("categories.title")}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(app)/more/categories/add")}
           className="bg-primary rounded-full w-9 h-9 items-center justify-center"

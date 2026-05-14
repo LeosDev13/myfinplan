@@ -132,10 +132,13 @@ export default function AccountsScreen() {
           paddingHorizontal: 16,
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
+          gap: 12,
         }}
       >
-        <Text style={{ color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={{ flex: 1, color: "#ffffff", fontSize: 22, fontWeight: "800", letterSpacing: -0.3 }}>
           {t("accounts.title")}
         </Text>
         <TouchableOpacity
