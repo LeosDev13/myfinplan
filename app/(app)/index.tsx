@@ -76,7 +76,8 @@ export default function DashboardScreen() {
 
   const now = useMemo(() => new Date(), []);
   const monthFrom = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), [now]);
-  const monthTo = useMemo(() => now.toISOString(), [now]);
+  // Use end of current month so transactions added today are always included
+  const monthTo = useMemo(() => new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString(), [now]);
 
   const { data: summary } = useMetricsSummary(workspaceId ?? "", monthFrom, monthTo);
 

@@ -21,12 +21,13 @@ function getPeriodRange(period: Period): {
   trendMonths: number;
 } {
   const now = new Date();
-  const to = now.toISOString();
+  // Use end of today so transactions added during the day are always included
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
   switch (period) {
     case "this-month":
       return {
         from: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
-        to,
+        to: endOfToday,
         trendMonths: 6,
       };
     case "last-month": {
@@ -41,13 +42,13 @@ function getPeriodRange(period: Period): {
     case "6-months":
       return {
         from: new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString(),
-        to,
+        to: endOfToday,
         trendMonths: 6,
       };
     case "year":
       return {
         from: new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString(),
-        to,
+        to: endOfToday,
         trendMonths: 12,
       };
   }
@@ -83,7 +84,10 @@ export default function MetricsScreen() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth() - (trendMonths - 1), 1).toISOString();
   }, [trendMonths]);
-  const trendTo = useMemo(() => new Date().toISOString(), []);
+  const trendTo = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
+  }, []);
 
   const ws = workspaceId ?? "";
   const { data: accounts } = useAccounts();

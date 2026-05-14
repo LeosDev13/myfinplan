@@ -92,7 +92,7 @@ export default function AppLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        unmountOnBlur: route.name === "more",
+        unmountOnBlur: route.name === "more" || route.name === "transactions",
       })}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
