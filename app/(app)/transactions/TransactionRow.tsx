@@ -39,11 +39,13 @@ export function TransactionRow({
   index,
   total,
   selected,
+  balanceAfterCents,
 }: {
   item: Transaction;
   index: number;
   total: number;
   selected?: boolean;
+  balanceAfterCents?: number;
 }) {
   const type = item.transaction_type;
   const color = TYPE_COLOR[type] ?? "#ffffff";
@@ -112,9 +114,16 @@ export function TransactionRow({
       ) : selected === false ? (
         <Ionicons name="checkmark-circle-outline" size={20} color="#525252" />
       ) : (
-        <Text style={{ color, fontSize: 14, fontWeight: "700" }}>
-          {prefix}{formatAmount(item.amount_cents, item.currency)}
-        </Text>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={{ color, fontSize: 14, fontWeight: "700" }}>
+            {prefix}{formatAmount(item.amount_cents, item.currency)}
+          </Text>
+          {balanceAfterCents !== undefined && (
+            <Text style={{ color: "#525252", fontSize: 11, marginTop: 2 }}>
+              {formatAmount(balanceAfterCents, item.currency)}
+            </Text>
+          )}
+        </View>
       )}
     </View>
   );

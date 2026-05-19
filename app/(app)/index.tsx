@@ -29,8 +29,8 @@ function formatMoney(cents: number, currency = "EUR"): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
     currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(cents / 100);
 }
 

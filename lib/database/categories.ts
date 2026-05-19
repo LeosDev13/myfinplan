@@ -6,65 +6,32 @@ export interface CategoryWithSubs extends Category {
   subcategories: Subcategory[];
 }
 
-// Flat row returned by the JOIN query
-interface CategoryJoinRow {
-  category_id: string;
-  category_name: string;
-  category_built_in: number;
-  category_created_at: string;
-  workspace_id: string;
-  sub_id: string | null;
-  sub_name: string | null;
-  sub_built_in: number | null;
-  sub_created_at: string | null;
-}
 
 export function useCategoriesWithSubs() {
-  const result = useQuery<CategoryJoinRow>(`
-    SELECT
-      c.id           AS category_id,
-      c.name         AS category_name,
-      c.is_built_in  AS category_built_in,
-      c.created_at   AS category_created_at,
-      c.workspace_id AS workspace_id,
-      s.id           AS sub_id,
-      s.name         AS sub_name,
-      s.is_built_in  AS sub_built_in,
-      s.created_at   AS sub_created_at
-    FROM categories c
-    LEFT JOIN subcategories s ON s.category_id = c.id
-    ORDER BY c.is_built_in DESC, c.name ASC, s.name ASC
-  `);
+  // Two separate queries so PowerSync independently tracks each table.
+  // A JOIN query can miss reactive updates when a subcategory is inserted
+  // for the first time into a category that previously had none.
+  const catsResult = useQuery<Category>(
+    `SELECT id, workspace_id, name, is_built_in, created_at
+     FROM categories
+     ORDER BY is_built_in DESC, name ASC`
+  );
 
-  // Group flat rows into CategoryWithSubs
-  const grouped: CategoryWithSubs[] = [];
-  const seen = new Map<string, CategoryWithSubs>();
+  const subsResult = useQuery<Subcategory>(
+    `SELECT id, category_id, name, is_built_in, created_at
+     FROM subcategories
+     ORDER BY name ASC`
+  );
 
-  for (const row of result.data) {
-    if (!seen.has(row.category_id)) {
-      const cat: CategoryWithSubs = {
-        id: row.category_id,
-        workspace_id: row.workspace_id,
-        name: row.category_name,
-        is_built_in: row.category_built_in,
-        created_at: row.category_created_at,
-        subcategories: [],
-      };
-      seen.set(row.category_id, cat);
-      grouped.push(cat);
-    }
-    if (row.sub_id && row.sub_name !== null) {
-      seen.get(row.category_id)!.subcategories.push({
-        id: row.sub_id,
-        category_id: row.category_id,
-        name: row.sub_name,
-        is_built_in: row.sub_built_in ?? 0,
-        created_at: row.sub_created_at ?? "",
-      });
-    }
-  }
+  const grouped: CategoryWithSubs[] = catsResult.data.map((cat) => ({
+    ...cat,
+    subcategories: subsResult.data.filter((s) => s.category_id === cat.id),
+  }));
 
-  return { ...result, data: grouped };
+  return {
+    data: grouped,
+    isLoading: catsResult.isLoading || subsResult.isLoading,
+  };
 }
 
 const DEFAULT_CATEGORIES: { name: string; subs: string[] }[] = [

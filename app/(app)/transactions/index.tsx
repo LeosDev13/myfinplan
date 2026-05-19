@@ -1,10 +1,13 @@
-import { View, Text, TouchableOpacity, SectionList, ActivityIndicator } from "react-native";
+import { useRef } from "react";
+import { View, Text, TouchableOpacity, SectionList, ScrollView, ActivityIndicator, Animated, Alert } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useState, useCallback } from "react";
-import { useTransactions } from "~/lib/database/transactions";
+import { useTransactions, useTransactionMutations } from "~/lib/database/transactions";
+import { useAccounts } from "~/lib/database/accounts";
 import { TransactionRow } from "./TransactionRow";
 import type { Transaction } from "~/lib/types";
 
@@ -36,18 +39,132 @@ function groupByDate(transactions: Transaction[], t: (k: string) => string): Sec
   }));
 }
 
+// ─── swipeable row ───────────────────────────────────────────────────────────
+
+function SwipeableTransactionRow({
+  item,
+  index,
+  total,
+  onPress,
+  onDelete,
+  balanceAfterCents,
+}: {
+  item: Transaction;
+  index: number;
+  total: number;
+  onPress: () => void;
+  onDelete: () => void;
+  balanceAfterCents?: number;
+}) {
+  const swipeRef = useRef<Swipeable>(null);
+  const { t } = useTranslation();
+
+  const renderRightActions = (
+    _progress: Animated.AnimatedInterpolation<number>,
+    dragX: Animated.AnimatedInterpolation<number>
+  ) => {
+    const translateX = dragX.interpolate({
+      inputRange: [-80, 0],
+      outputRange: [0, 80],
+      extrapolate: "clamp",
+    });
+    return (
+      <Animated.View style={{ transform: [{ translateX }] }}>
+        <TouchableOpacity
+          onPress={() => {
+            swipeRef.current?.close();
+            onDelete();
+          }}
+          style={{
+            backgroundColor: "#ef4444",
+            width: 80,
+            alignSelf: "stretch",
+            alignItems: "center",
+            justifyContent: "center",
+            borderTopRightRadius: index === 0 ? 12 : 3,
+            borderBottomRightRadius: index === total - 1 ? 12 : 3,
+          }}
+        >
+          <Ionicons name="trash-outline" size={20} color="#ffffff" />
+          <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: "600", marginTop: 3 }}>
+            {t("common.delete")}
+          </Text>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  return (
+    <Swipeable
+      ref={swipeRef}
+      renderRightActions={renderRightActions}
+      rightThreshold={40}
+      overshootRight={false}
+    >
+      <TouchableOpacity onPress={onPress}>
+        <TransactionRow item={item} index={index} total={total} balanceAfterCents={balanceAfterCents} />
+      </TouchableOpacity>
+    </Swipeable>
+  );
+}
+
+// ─── screen ──────────────────────────────────────────────────────────────────
+
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
   const [limit, setLimit] = useState(PAGE_SIZE);
-  const { data: transactions, isLoading } = useTransactions(limit);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const { data: accounts } = useAccounts();
+  const { data: transactions, isLoading } = useTransactions(limit, selectedAccountId);
+  const { remove } = useTransactionMutations();
   const sections = groupByDate(transactions, t);
   const hasMore = transactions.length === limit;
+
+  // Running balance per transaction — only when filtered to one account
+  const balanceMap = useCallback((): Map<string, number> => {
+    if (!selectedAccountId) return new Map();
+    const account = accounts.find((a) => a.id === selectedAccountId);
+    if (!account) return new Map();
+
+    const map = new Map<string, number>();
+    // transactions are sorted DESC; walk forward to accumulate from current balance backwards
+    let running = account.balance_cents;
+    for (const tx of transactions) {
+      map.set(tx.id, running);
+      // undo this transaction's effect to get the balance before it
+      if (tx.transaction_type === "income" && tx.account_id === selectedAccountId) {
+        running -= tx.amount_cents;
+      } else if (tx.transaction_type === "expense" && tx.account_id === selectedAccountId) {
+        running += tx.amount_cents;
+      } else if (tx.transaction_type === "transfer") {
+        if (tx.account_id === selectedAccountId) running += tx.amount_cents;
+        else if (tx.to_account_id === selectedAccountId) running -= tx.amount_cents;
+      }
+    }
+    return map;
+  }, [selectedAccountId, accounts, transactions])();
 
   const loadMore = useCallback(() => {
     if (hasMore) setLimit((l) => l + PAGE_SIZE);
   }, [hasMore]);
+
+  const selectAccount = (id: string | null) => {
+    setSelectedAccountId(id);
+    setLimit(PAGE_SIZE);
+  };
+
+  const handleDelete = (item: Transaction) => {
+    Alert.alert(t("transactions.delete.title"), t("transactions.delete.confirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: () => remove(item.id),
+      },
+    ]);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
@@ -68,6 +185,66 @@ export default function ActivityScreen() {
           <Ionicons name="add" size={26} color="#10b981" />
         </TouchableOpacity>
       </View>
+
+      {/* Account filter pills */}
+      {accounts.length > 1 && (
+        <View style={{ paddingVertical: 4 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingVertical: 4 }}
+          >
+            <TouchableOpacity
+              onPress={() => selectAccount(null)}
+              style={{
+                paddingHorizontal: 14,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: selectedAccountId === null ? "#10b981" : "transparent",
+                borderWidth: 1,
+                borderColor: selectedAccountId === null ? "#10b981" : "#1f1f1f",
+              }}
+            >
+              <Text
+                style={{
+                  color: selectedAccountId === null ? "#ffffff" : "#525252",
+                  fontSize: 12,
+                  fontWeight: "600",
+                }}
+              >
+                {t("common.all")}
+              </Text>
+            </TouchableOpacity>
+            {accounts.map((account) => {
+              const isActive = selectedAccountId === account.id;
+              return (
+                <TouchableOpacity
+                  key={account.id}
+                  onPress={() => selectAccount(isActive ? null : account.id)}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 20,
+                    backgroundColor: isActive ? "#10b981" : "transparent",
+                    borderWidth: 1,
+                    borderColor: isActive ? "#10b981" : "#1f1f1f",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: isActive ? "#ffffff" : "#525252",
+                      fontSize: 12,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {account.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       {isLoading ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -104,9 +281,14 @@ export default function ActivityScreen() {
             </Text>
           )}
           renderItem={({ item, index, section }) => (
-            <TouchableOpacity onPress={() => router.push(`/(app)/transactions/edit/${item.id}`)}>
-              <TransactionRow item={item} index={index} total={section.data.length} />
-            </TouchableOpacity>
+            <SwipeableTransactionRow
+              item={item}
+              index={index}
+              total={section.data.length}
+              onPress={() => router.push(`/(app)/transactions/edit/${item.id}`)}
+              onDelete={() => handleDelete(item)}
+              balanceAfterCents={balanceMap.get(item.id)}
+            />
           )}
           stickySectionHeadersEnabled={false}
           onEndReached={loadMore}

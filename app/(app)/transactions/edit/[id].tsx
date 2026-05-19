@@ -11,18 +11,20 @@ import { useTranslation } from "react-i18next";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Select } from "~/components/ui/select";
+import { MerchantInput } from "~/components/ui/merchant-input";
 import { useAccounts } from "~/lib/database/accounts";
 import { useCategoriesWithSubs } from "~/lib/database/categories";
-import { useTransaction, useTransactionMutations } from "~/lib/database/transactions";
+import { useTransaction, useTransactionMutations, useMerchants } from "~/lib/database/transactions";
 import type { TransactionType } from "~/lib/types";
 
 const schema = z.object({
   amount: z
     .string()
     .min(1, "Amount is required")
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, "Enter a valid amount"),
+    .refine((v) => !isNaN(parseFloat(v.replace(",", "."))) && parseFloat(v.replace(",", ".")) > 0, "Enter a valid amount"),
   account_id: z.string().min(1, "Account is required"),
-  category: z.string().min(1, "Category is required"),
+  to_account_id: z.string().optional(),
+  category: z.string().optional(),
   subcategory: z.string().optional(),
   merchant: z.string().optional(),
   note: z.string().optional(),
@@ -50,6 +52,7 @@ export default function EditTransactionScreen() {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategoriesWithSubs();
   const { update, remove } = useTransactionMutations();
+  const merchants = useMerchants();
 
   const {
     control,
@@ -63,6 +66,7 @@ export default function EditTransactionScreen() {
     defaultValues: {
       amount: "",
       account_id: "",
+      to_account_id: "",
       category: "",
       subcategory: "",
       merchant: "",
@@ -84,6 +88,7 @@ export default function EditTransactionScreen() {
     reset({
       amount: (transaction.amount_cents / 100).toFixed(2),
       account_id: transaction.account_id,
+      to_account_id: transaction.to_account_id ?? "",
       category: transaction.category,
       subcategory: transaction.subcategory ?? "",
       merchant: transaction.merchant ?? "",
@@ -98,26 +103,32 @@ export default function EditTransactionScreen() {
   const hasSubcategories = (selectedCategory?.subcategories.length ?? 0) > 0;
 
   const selectedAccountId = watch("account_id");
+  const selectedToAccountId = watch("to_account_id");
   const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
 
-  const dateLabel = transaction
-    ? new Date(transaction.datetime).toLocaleDateString("en-GB", {
-        day: "2-digit", month: "short", year: "numeric",
-      })
-    : "—";
+  const isTransfer = type === "transfer";
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
+    if (isTransfer && (!data.to_account_id || data.to_account_id === data.account_id)) {
+      Alert.alert(t("common.error"), t("transactions.errors.toAccountRequired"));
+      return;
+    }
+    if (!isTransfer && !data.category) {
+      Alert.alert(t("common.error"), t("transactions.errors.categoryRequired"));
+      return;
+    }
     try {
-      const amountCents = Math.round(parseFloat(data.amount) * 100);
+      const amountCents = Math.round(parseFloat(data.amount.replace(",", ".")) * 100);
       const tagsArray = data.tags
         ? data.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
         : [];
       await update(id, {
         account_id: data.account_id,
+        to_account_id: isTransfer ? (data.to_account_id ?? null) : null,
         transaction_type: type,
-        category: data.category,
-        subcategory: data.subcategory || null,
+        category: isTransfer ? "Transfer" : (data.category ?? ""),
+        subcategory: isTransfer ? null : (data.subcategory || null),
         amount_cents: amountCents,
         currency: selectedAccount?.currency ?? transaction?.currency ?? "EUR",
         note: data.note || null,
@@ -151,6 +162,9 @@ export default function EditTransactionScreen() {
   };
 
   const accountOptions = accounts.map((a) => ({ label: a.name, value: a.id }));
+  const toAccountOptions = accounts
+    .filter((a) => a.id !== selectedAccountId)
+    .map((a) => ({ label: a.name, value: a.id }));
   const categoryOptions = categories.map((c) => ({ label: c.name, value: c.name }));
   const subcategoryOptions =
     selectedCategory?.subcategories.map((s) => ({ label: s.name, value: s.name })) ?? [];
@@ -213,7 +227,12 @@ export default function EditTransactionScreen() {
             return (
               <TouchableOpacity
                 key={txType}
-                onPress={() => setType(txType)}
+                onPress={() => {
+                  setType(txType);
+                  setValue("to_account_id", "");
+                  setValue("category", "");
+                  setValue("subcategory", "");
+                }}
                 style={{
                   flex: 1,
                   paddingVertical: 8,
@@ -283,45 +302,33 @@ export default function EditTransactionScreen() {
           )}
         />
 
-        {/* Account */}
+        {/* From account */}
         <Controller
           control={control}
           name="account_id"
           render={({ field: { onChange, value } }) => (
             <Select
-              label={t("transactions.fields.account")}
+              label={isTransfer ? t("transactions.fields.fromAccount") : t("transactions.fields.account")}
               options={accountOptions}
               value={value}
-              onChange={onChange}
+              onChange={(v) => {
+                onChange(v);
+                if (selectedToAccountId === v) setValue("to_account_id", "");
+              }}
               error={errors.account_id?.message}
             />
           )}
         />
 
-        {/* Category */}
-        <Controller
-          control={control}
-          name="category"
-          render={({ field: { onChange, value } }) => (
-            <Select
-              label={t("transactions.fields.category")}
-              options={categoryOptions}
-              value={value}
-              onChange={(v) => { onChange(v); setValue("subcategory", ""); }}
-              error={errors.category?.message}
-            />
-          )}
-        />
-
-        {/* Subcategory */}
-        {hasSubcategories && (
+        {/* To account (transfer only) */}
+        {isTransfer && (
           <Controller
             control={control}
-            name="subcategory"
+            name="to_account_id"
             render={({ field: { onChange, value } }) => (
               <Select
-                label={t("transactions.fields.subcategory")}
-                options={subcategoryOptions}
+                label={t("transactions.fields.toAccount")}
+                options={toAccountOptions}
                 value={value ?? ""}
                 onChange={onChange}
               />
@@ -329,20 +336,57 @@ export default function EditTransactionScreen() {
           />
         )}
 
-        {/* Merchant */}
-        <Controller
-          control={control}
-          name="merchant"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label={t("transactions.fields.merchant")}
-              placeholder={t("transactions.fields.merchantPlaceholder")}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value}
+        {/* Category + subcategory (hidden for transfers) */}
+        {!isTransfer && (
+          <>
+            <Controller
+              control={control}
+              name="category"
+              render={({ field: { onChange, value } }) => (
+                <Select
+                  label={t("transactions.fields.category")}
+                  options={categoryOptions}
+                  value={value ?? ""}
+                  onChange={(v) => { onChange(v); setValue("subcategory", ""); }}
+                  error={errors.category?.message}
+                />
+              )}
             />
-          )}
-        />
+
+            {hasSubcategories && (
+              <Controller
+                control={control}
+                name="subcategory"
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    label={t("transactions.fields.subcategory")}
+                    options={subcategoryOptions}
+                    value={value ?? ""}
+                    onChange={onChange}
+                  />
+                )}
+              />
+            )}
+          </>
+        )}
+
+        {/* Merchant (not shown for transfers) */}
+        {!isTransfer && (
+          <Controller
+            control={control}
+            name="merchant"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <MerchantInput
+                label={t("transactions.fields.merchant")}
+                placeholder={t("transactions.fields.merchantPlaceholder")}
+                value={value ?? ""}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                merchants={merchants}
+              />
+            )}
+          />
+        )}
 
         {/* Note */}
         <Controller
@@ -374,41 +418,41 @@ export default function EditTransactionScreen() {
           )}
         />
 
-        {/* Reimbursed */}
-        <Controller
-          control={control}
-          name="reimbursed"
-          render={({ field: { onChange, value } }) => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 4,
-                opacity: type === "expense" ? 1 : 0,
-              }}
-              pointerEvents={type === "expense" ? "auto" : "none"}
-            >
-              <View>
-                <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-                  {t("transactions.fields.reimbursed")}
-                </Text>
-                <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
-                  {t("transactions.fields.reimbursedDesc")}
-                </Text>
+        {/* Reimbursed (expense only) */}
+        {type === "expense" && (
+          <Controller
+            control={control}
+            name="reimbursed"
+            render={({ field: { onChange, value } }) => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 4,
+                }}
+              >
+                <View>
+                  <Text style={{ color: "#525252", fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
+                    {t("transactions.fields.reimbursed")}
+                  </Text>
+                  <Text style={{ color: "#525252", fontSize: 12, marginTop: 2 }}>
+                    {t("transactions.fields.reimbursedDesc")}
+                  </Text>
+                </View>
+                <Switch
+                  value={value ?? false}
+                  onValueChange={onChange}
+                  trackColor={{ false: "#1f1f1f", true: "#10b981" }}
+                  thumbColor="#ffffff"
+                />
               </View>
-              <Switch
-                value={value ?? false}
-                onValueChange={onChange}
-                trackColor={{ false: "#1f1f1f", true: "#10b981" }}
-                thumbColor="#ffffff"
-              />
-            </View>
-          )}
-        />
+            )}
+          />
+        )}
 
         <Button onPress={handleSubmit(onSubmit)} loading={isSubmitting}>
-          Save changes
+          {t("common.save")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

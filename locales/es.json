@@ -58,7 +58,8 @@
     "error": "Error",
     "seeAll": "Ver todo",
     "optional": "Opcional",
-    "cannotBeUndone": "Esta acción no se puede deshacer."
+    "cannotBeUndone": "Esta acción no se puede deshacer.",
+    "all": "Todas"
   },
   "onboarding": {
     "greeting": "Bienvenido",
@@ -101,6 +102,8 @@
       "date": "Fecha",
       "amount": "Importe",
       "account": "Cuenta",
+      "fromAccount": "Cuenta origen",
+      "toAccount": "Cuenta destino",
       "category": "Categoría",
       "subcategory": "Subcategoría",
       "merchant": "Comercio",
@@ -116,7 +119,8 @@
       "amountRequired": "El importe es obligatorio",
       "amountInvalid": "Introduce un importe válido",
       "accountRequired": "La cuenta es obligatoria",
-      "categoryRequired": "La categoría es obligatoria"
+      "categoryRequired": "La categoría es obligatoria",
+      "toAccountRequired": "Selecciona una cuenta destino diferente"
     },
     "delete": {
       "title": "Eliminar movimiento",
@@ -227,7 +231,7 @@
     "title": "Métricas",
     "periods": {
       "thisMonth": "Este mes",
-      "lastMonth": "Mes anterior",
+      "lastMonth": "Mes pasado",
       "sixMonths": "6 meses",
       "year": "Año"
     },

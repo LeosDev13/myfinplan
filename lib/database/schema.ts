@@ -13,6 +13,7 @@ const accounts = new Table({
 const transactions = new Table({
   workspace_id: column.text,
   account_id: column.text,
+  to_account_id: column.text, // only set for transfer type
   transaction_type: column.text,
   category: column.text,
   subcategory: column.text,

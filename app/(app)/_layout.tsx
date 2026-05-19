@@ -99,10 +99,28 @@ export default function AppLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
-      <Tabs.Screen name="transactions" options={{ title: "Transactions" }} />
+      <Tabs.Screen
+        name="transactions"
+        options={{ title: "Transactions" }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("transactions", { screen: "index" });
+          },
+        })}
+      />
       <Tabs.Screen name="budgets" options={{ title: "Budgets" }} />
       <Tabs.Screen name="metrics/index" options={{ title: "Metrics" }} />
-      <Tabs.Screen name="more" options={{ title: "More" }} />
+      <Tabs.Screen
+        name="more"
+        options={{ title: "More" }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("more", { screen: "index" });
+          },
+        })}
+      />
     </Tabs>
   );
 }

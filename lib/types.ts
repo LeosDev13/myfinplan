@@ -20,6 +20,7 @@ export interface Transaction {
   id: string;
   workspace_id: string;
   account_id: string;
+  to_account_id: string | null; // only set for transfer type
   transaction_type: TransactionType;
   category: string;
   subcategory: string | null;

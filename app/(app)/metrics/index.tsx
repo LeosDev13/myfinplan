@@ -60,8 +60,8 @@ function formatMoney(currency: string, cents: number): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
     currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(cents / 100);
 }
 
@@ -148,10 +148,11 @@ export default function MetricsScreen() {
       </View>
 
       {/* Period picker */}
+      <View style={{ paddingVertical: 8 }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12, gap: 6 }}
+        contentContainerStyle={{ paddingHorizontal: 12, gap: 6 }}
       >
         {PERIOD_LABELS.map(({ key, label }) => (
           <TouchableOpacity
@@ -160,8 +161,8 @@ export default function MetricsScreen() {
             style={{
               backgroundColor: period === key ? "#10b981" : "#1f1f1f",
               borderRadius: 20,
-              paddingHorizontal: 14,
-              paddingVertical: 6,
+              paddingHorizontal: 12,
+              paddingVertical: 5,
             }}
           >
             <Text
@@ -176,6 +177,7 @@ export default function MetricsScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      </View>
 
       {/* Scrollable body */}
       {isLoading ? (
@@ -183,6 +185,7 @@ export default function MetricsScreen() {
           <ActivityIndicator color="#10b981" />
         </View>
       ) : <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 12,
           paddingBottom: insets.bottom + 24,

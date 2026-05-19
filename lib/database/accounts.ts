@@ -7,11 +7,13 @@ export function useAccounts() {
     SELECT
       a.*,
       a.initial_balance_cents
-        + COALESCE(SUM(CASE WHEN t.transaction_type = 'income'  THEN t.amount_cents ELSE 0 END), 0)
-        - COALESCE(SUM(CASE WHEN t.transaction_type = 'expense' THEN t.amount_cents ELSE 0 END), 0)
+        + COALESCE(SUM(CASE WHEN t.transaction_type = 'income'  AND t.account_id    = a.id THEN t.amount_cents ELSE 0 END), 0)
+        - COALESCE(SUM(CASE WHEN t.transaction_type = 'expense' AND t.account_id    = a.id THEN t.amount_cents ELSE 0 END), 0)
+        - COALESCE(SUM(CASE WHEN t.transaction_type = 'transfer' AND t.account_id    = a.id THEN t.amount_cents ELSE 0 END), 0)
+        + COALESCE(SUM(CASE WHEN t.transaction_type = 'transfer' AND t.to_account_id = a.id THEN t.amount_cents ELSE 0 END), 0)
       AS balance_cents
     FROM accounts a
-    LEFT JOIN transactions t ON t.account_id = a.id
+    LEFT JOIN transactions t ON (t.account_id = a.id OR t.to_account_id = a.id)
     GROUP BY a.id
     ORDER BY a.created_at ASC
   `);

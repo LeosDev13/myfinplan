@@ -58,7 +58,8 @@
     "error": "Error",
     "seeAll": "See all",
     "optional": "Optional",
-    "cannotBeUndone": "This cannot be undone."
+    "cannotBeUndone": "This cannot be undone.",
+    "all": "All"
   },
   "onboarding": {
     "greeting": "Welcome",
@@ -101,6 +102,8 @@
       "date": "Date",
       "amount": "Amount",
       "account": "Account",
+      "fromAccount": "From account",
+      "toAccount": "To account",
       "category": "Category",
       "subcategory": "Subcategory",
       "merchant": "Merchant",
@@ -116,7 +119,8 @@
       "amountRequired": "Amount is required",
       "amountInvalid": "Enter a valid amount",
       "accountRequired": "Account is required",
-      "categoryRequired": "Category is required"
+      "categoryRequired": "Category is required",
+      "toAccountRequired": "Please select a different destination account"
     },
     "delete": {
       "title": "Delete transaction",
